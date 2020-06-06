@@ -1,0 +1,57 @@
+---
+title: "Connect Evaluation"
+output: html_notebook
+---
+
+```{r libraries, message=FALSE}
+#load libraries
+library(haven)
+library(dplyr)
+library(janitor)
+library(stringr)
+library(readr)
+library(ggplot2)
+library(tidyr)
+
+
+```
+
+
+```{r student_survey, message =FALSE}
+#Reading Student Surveys, adding cohort column, and bind rows 
+student_survey_spring_2019 <- read_csv("data/Student survey_Spring 2019.csv")
+student_survey_spring_2019 <- mutate(student_survey_spring_2019, cohort = "Spring 2019")
+student_survey_summer_2019 <- read_csv("data/Student survey_Summer 2019.csv")
+student_survey_summer_2019 <- mutate(student_survey_summer_2019, cohort = "Summer 2019")
+student_survey_fall_2019 <- read_csv("data/Student survey_Fall 2019.csv")
+student_survey_fall_2019 <- mutate(student_survey_fall_2019, cohort = "Fall 2019")
+student_surveys <- bind_rows(student_survey_spring_2019,student_survey_summer_2019, student_survey_fall_2019)
+
+student_surveys <- clean_names(student_surveys)
+
+
+#GGPLOTS
+
+for(i in 1:ncol(student_surveys)){
+  
+
+print(
+  ggplot(student_surveys, aes(x=student_surveys[[i]])) +
+  geom_histogram(stat = "count", fill = "lightblue") +
+  xlab(colnames(student_surveys)[i])
+  )
+  
+  
+}
+  
+```
+
+
+
+```{r organization_survey}
+#Reading Organization Surveys
+organization_survey_spring_2019 <- read_csv("data/Organization Survey_Spring 2019.csv")
+organization_survey_summer_2019 <- read_csv("data/Organization Survey_Summer 2019.csv")
+organization_survey_fall_2019 <- read_csv("data/Organization Survey_Fall 2019.csv")
+```
+
