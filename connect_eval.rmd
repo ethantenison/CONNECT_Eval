@@ -273,15 +273,65 @@ for(i in 1:ncol(organization_surveys)){
 
 print(
   ggplot(organization_surveys, aes(x=organization_surveys[[i]])) +
-  geom_histogram(stat = "count", fill = "lightblue") +
-  theme(
-    plot.title = element_text(size = 12, face = "bold",hjust = 0.5),
-    axis.title.x = element_blank()
-  ) +
-  ggtitle(organization_survey_titles[i])
-  )
+        geom_histogram(stat = "count", fill = "lightblue") +
+        theme(
+          plot.title = element_text(size = 12, face = "bold",hjust = 0.5),
+          axis.title.x = element_blank()
+        ) +
+        ggtitle(organization_survey_titles[i])
+      )
   
   
 }
+```
+
+## CONNECT Program Sectors
+
+
+```{r project_breakdown, echo=FALSE, message =FALSE, warning = FALSE, fig.width=15,fig.height=8}
+
+#CONNECT Sectors 
+library(readxl)
+sectors <- read_excel("data/CONNECT _database_ project_info_6.9.2020.xlsx")
+
+print(
+      ggplot(sectors, aes(x=Sector)) +
+        geom_histogram(stat = "count", fill = "lightblue") +
+        theme(
+          plot.title = element_text(size = 20, face = "bold",hjust = 0.5),
+          axis.title.x = element_blank(),
+          axis.title.y = element_text(size = 12),
+          axis.text.x = element_text(size = 12),
+          axis.text.y = element_text(size = 12)
+        ) +
+        ggtitle("CONNECT Project Sectors")
+  
+)
+
+```
+
+## Connect Project Types 
+
+```{r proj_types,echo=FALSE, message =FALSE, warning = FALSE, fig.width=20,fig.height=8}
+
+
+#Project type
+project_type <- read_excel("data/CONNECT _database_ project_info_6.9.2020.xlsx", 
+    sheet = "Project Type")
+
+print(
+      ggplot(project_type, aes(x=`Project Category (primary)`)) +
+        geom_histogram(stat = "count", fill = "lightblue") +
+        theme(
+          plot.title = element_text(size = 16, face = "bold",hjust = 0.5),
+          axis.title.x = element_blank(),
+          axis.title.y = element_text(size = 12),
+          axis.text.x = element_text(size = 12),
+          axis.text.y = element_text(size = 12)
+        ) +
+        ggtitle("CONNECT Project Types")
+  
+)
+
 ```
 
