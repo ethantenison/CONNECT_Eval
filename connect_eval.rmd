@@ -30,7 +30,7 @@ student_survey_fall_2019 <- mutate(student_survey_fall_2019, cohort = "Fall 2019
 student_surveys <- bind_rows(student_survey_spring_2019,student_survey_summer_2019, student_survey_fall_2019)
 
 
-# #These questions need to be removed from the histograms because there are too many answers 
+# These questions need to be removed from the histograms because there are too many answers 
 student_surveys <- select(student_surveys, -c("Your Name",
                                                "What aspect(s) of the program/course were most helpful to you in achieving your learning goals?",
                                                "What suggestions for improvement do you have for future iterations of this program or course?",
@@ -162,12 +162,126 @@ print(
   
 ```
 
-
+## Organization Evaluation Histograms
 
 ```{r organization_survey, echo=FALSE, message =FALSE, warning = FALSE}
 #Reading Organization Surveys
 organization_survey_spring_2019 <- read_csv("data/Organization Survey_Spring 2019.csv")
+organization_survey_spring_2019 <- mutate(organization_survey_spring_2019, cohort = "Spring 2019")
 organization_survey_summer_2019 <- read_csv("data/Organization Survey_Summer 2019.csv")
+organization_survey_summer_2019 <- mutate(organization_survey_summer_2019, cohort = "Summer 2019")
 organization_survey_fall_2019 <- read_csv("data/Organization Survey_Fall 2019.csv")
+organization_survey_fall_2019 <- mutate(organization_survey_fall_2019, cohort = "Fall 2019")
+organization_surveys <- bind_rows(organization_survey_spring_2019,organization_survey_summer_2019, organization_survey_fall_2019)
+
+
+# These questions need to be removed from the histograms because there are too many answers 
+organization_surveys <- select(organization_surveys, -c("Your Organization's Name",
+                                                        "Please describe how you intend to use or build upon the work done by your consultant(s) (if at all).",
+                                                        "What did you and/or your organization learn from your participation in this program/course?",
+                                                        "What suggestions for improvement do you have for future iterations of this program or course?",
+                                                        "What is one piece of advice that you would like to give to your consultant(s) to be more effective and impactful in the future?",
+                                                        "Is there anything else that you would like to share about your experience? (Optional)",
+                                                        "If you answered \"Maybe\" or \"No\" to the previous question, please explain."))
+
+# Survey Titles 
+organization_survey_titles <- list(
+            "In which program did you participate?"                                                                                                                                  
+            ,"To what extent did your experience meet your \nexpectations for the program and/or course?"                                                                               
+            , "How useful was this experience for you or your organization?"                                                                                                           
+            , "How satisfied are you with the relationship with your consultant(s)?"                                                                                                   
+            , "How would you rate the time commitment and \nresources required of you during this program/course?"                                                                       
+            , "Would you be open to participating in this \nprogram/course again in the future?"                                                                                         
+            , "How effective was your consultant(s) in \nleading the project from start to finish?"                                                                                      
+            , "How effective was your consultant(s) in \ncommunicating with you and/or your organization?"                                                                               
+            , "How effective was your consultant(s) in \nrecommending clear and compelling solutions for your organization?"                                                             
+            , "How effective was your consultant(s) \nin synthesizing and presenting information in an actionable \nand accessible manner to you and/or your organization?"                
+            , "Are you willing for the program or the RGK Center \nto share highlights of your organization's project in \nmarketing, evaluation, and recruitment materials in the future?"
+            ,  "cohort"
+
+)
+
+#Standarizing variable names
+organization_surveys <- clean_names(organization_surveys)
+
+#Created ordered factors 
+organization_surveys$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course <- factor(
+    organization_surveys$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course,
+    levels =
+        c("Equals expectations", "Exceeds expectations", "Far exceeds expectations"),
+    exclude = NULL,
+    ordered = TRUE
+)
+
+organization_surveys$how_useful_was_this_experience_for_you_or_your_organization <- factor(
+    organization_surveys$how_useful_was_this_experience_for_you_or_your_organization,
+    levels =
+        c("Slightly useful", "Moderately useful", "Very useful", "Extremely useful"),
+    exclude = NULL,
+    ordered = TRUE
+)
+
+organization_surveys$how_satisfied_are_you_with_the_relationship_with_your_consultant_s <- factor(
+    organization_surveys$how_satisfied_are_you_with_the_relationship_with_your_consultant_s,
+    levels =
+        c("Slightly satisfied", "Moderately satisfied", "Very satisfied", "Extremely satisfied"),
+    exclude = NULL,
+    ordered = TRUE
+)
+
+organization_surveys$how_would_you_rate_the_time_commitment_and_resources_required_of_you_during_this_program_course <- factor(
+    organization_surveys$how_would_you_rate_the_time_commitment_and_resources_required_of_you_during_this_program_course,
+    levels =
+        c("Slightly too little", "About right", "Slightly too much"),
+    exclude = NULL,
+    ordered = TRUE
+)
+organization_surveys$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish <- factor(
+    organization_surveys$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish,
+    levels =
+        c("Not effective at all", "Slightly effective",  "Moderately effective", "Very effective", "Extremely effective"),
+    exclude = NULL,
+    ordered = TRUE
+)
+organization_surveys$how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization <- factor(
+    organization_surveys$how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization,
+    levels =
+        c("Not effective at all", "Slightly effective",  "Moderately effective", "Very effective", "Extremely effective"),
+    exclude = NULL,
+    ordered = TRUE
+)
+organization_surveys$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization <- factor(
+    organization_surveys$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization,
+    levels =
+        c("Not effective at all", "Slightly effective",  "Moderately effective", "Very effective", "Extremely effective"),
+    exclude = NULL,
+    ordered = TRUE
+)
+organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization <- factor(
+    organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization,
+    levels =
+        c("Not effective at all", "Slightly effective",  "Moderately effective", "Very effective", "Extremely effective"),
+    exclude = NULL,
+    ordered = TRUE
+)
+
+
+
+#GGPLOTS
+for(i in 1:ncol(organization_surveys)){
+  
+
+print(
+  ggplot(organization_surveys, aes(x=organization_surveys[[i]])) +
+  geom_histogram(stat = "count", fill = "lightblue") +
+  theme(
+    plot.title = element_text(size = 12, face = "bold",hjust = 0.5),
+    axis.title.x = element_blank()
+  ) +
+  ggtitle(organization_survey_titles[i])
+  )
+  
+  
+}
 ```
 
