@@ -1,9 +1,11 @@
 ---
 title: "Connect Evaluation"
-output: html_notebook
+output:
+  html_document:
+    df_print: paged
 ---
 
-```{r libraries, message=FALSE}
+```{r libraries, message=FALSE, echo=FALSE, warning = FALSE}
 #load libraries
 library(haven)
 library(dplyr)
@@ -16,8 +18,8 @@ library(tidyr)
 
 ```
 
-
-```{r student_survey, message =FALSE}
+## Student Evaluation Histograms 
+```{r student_survey, message =FALSE, echo=FALSE, warning = FALSE}
 #Reading Student Surveys, adding cohort column, and bind rows 
 student_survey_spring_2019 <- read_csv("data/Student survey_Spring 2019.csv")
 student_survey_spring_2019 <- mutate(student_survey_spring_2019, cohort = "Spring 2019")
@@ -27,9 +29,119 @@ student_survey_fall_2019 <- read_csv("data/Student survey_Fall 2019.csv")
 student_survey_fall_2019 <- mutate(student_survey_fall_2019, cohort = "Fall 2019")
 student_surveys <- bind_rows(student_survey_spring_2019,student_survey_summer_2019, student_survey_fall_2019)
 
+
+# #These questions need to be removed from the histograms because there are too many answers 
+student_surveys <- select(student_surveys, -c("Your Name",
+                                               "What aspect(s) of the program/course were most helpful to you in achieving your learning goals?",
+                                               "What suggestions for improvement do you have for future iterations of this program or course?",
+                                               "What resources did you find most helpful for your learning and/or completing your client project? - Other - Text","What resources did you find most helpful for your learning and/or completing your client project? - Selected Choice",
+                                                "If you selected \"Maybe\" or \"No\" to the previous question, please explain.",
+                                                "Is there anything else you would like to share about your experience in this program or course? (Optional)"))
+
+#Standarizing variable names
 student_surveys <- clean_names(student_surveys)
 
 
+
+
+#Adding skip a line to titles
+student_survey_title <- list(
+         "In which program(s) are you a participant?"                                                                                                                          
+         , "How much do you believe that you improved in \nworking with clients in an independent capacity?"                                                                       
+         , "How much do you believe that you improved in \ngiving a client real-time feedback?"                                                                                    
+         , "How much do you believe that you improved in planning \nand facilitating meetings with clients?"                                                                       
+         , "How much do you believe that you improved in \nleading and managing a project from start to finish \nwith little guidance from your client?"                             
+         , "How much do you believe that you improved in \ndesigning clear and compelling solutions when provided \nwith ambiguous information and support?"                         
+         , "How much do you believe that you improved in \nsynthesizing and presenting (written and verbal) complex \ninformation to clients in an accessible and actionable manner?"
+         , "How useful do you believe your project and final deliverable \nwas to your client organization?"                                                                       
+        , "How clear were expectations from your client about your \nproject scope and deliverables?"                                                                             
+        , "How would you rate the time commitment and work load required \nof you by your client organization?"                                                                   
+        , "Would you recommend working with this client again in \nfuture years of this program or course?"                                                                       
+        , "To what extent did your experience meet your expectations \nfor the program and/or course?"                                                                            
+        , "How supported did you feel by the program \ncoordinator(s) and/or instructor in addressing challenges \nor roadblocks in your client project?"                           
+        , "Are you willing to share your experience in the \nprogram and/or course for marketing or student \nrecruitment purposes in the future?"                                  
+        , "cohort"      
+)
+  
+#Created ordered factors 
+student_surveys$`how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity` <- factor(
+    student_surveys$`how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity`,
+    levels =
+        c("None at all", "A little", "A moderate amount", "A lot", "A great deal"),
+    exclude = NULL,
+    ordered = TRUE
+)
+
+student_surveys$`how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback` <- factor(
+    student_surveys$`how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback`,
+    levels =
+        c("None at all", "A little", "A moderate amount", "A lot", "A great deal"),
+    exclude = NULL,
+    ordered = TRUE
+)
+
+student_surveys$`how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients` <- factor(
+    student_surveys$`how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients`,
+    levels =
+        c("None at all", "A little", "A moderate amount", "A lot", "A great deal"),
+    exclude = NULL,
+    ordered = TRUE
+)
+
+student_surveys$`how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client` <- factor(
+    student_surveys$`how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client`,
+    levels =
+        c("None at all", "A little", "A moderate amount", "A lot", "A great deal"),
+    exclude = NULL,
+    ordered = TRUE
+)
+
+student_surveys$`how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support` <- factor(
+    student_surveys$`how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support`,
+    levels =
+        c("None at all", "A little", "A moderate amount", "A lot", "A great deal"),
+    exclude = NULL,
+    ordered = TRUE
+)
+
+student_surveys$`how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner` <- factor(
+    student_surveys$`how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner`,
+    levels =
+        c("None at all", "A little", "A moderate amount", "A lot", "A great deal"),
+    exclude = NULL,
+    ordered = TRUE
+)
+student_surveys$`how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization` <- factor(
+    student_surveys$`how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization`,
+    levels =
+        c("Slightly useful", "Moderately useful", "Very useful", "Extremely useful"),
+    exclude = NULL,
+    ordered = TRUE
+)
+
+student_surveys$`how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables` <- factor(
+    student_surveys$`how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables`,
+    levels =
+        c("Somewhat unclear", "Neither clear nor unclear", "Somewhat clear", "Extremely clear"),
+    exclude = NULL,
+    ordered = TRUE
+)
+
+student_surveys$`how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization` <- factor(
+    student_surveys$`how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization`,
+    levels =
+        c("Slightly too little", "About right", "Slightly too much"),
+    exclude = NULL,
+    ordered = TRUE
+)
+
+student_surveys$`to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course` <- factor(
+    student_surveys$`to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course`,
+    levels =
+        c("Short of expectations", "Equals expectations", "Exceeds expectations", "Far exceeds expectations" ),
+    exclude = NULL,
+    ordered = TRUE
+)
 #GGPLOTS
 
 for(i in 1:ncol(student_surveys)){
@@ -38,7 +150,11 @@ for(i in 1:ncol(student_surveys)){
 print(
   ggplot(student_surveys, aes(x=student_surveys[[i]])) +
   geom_histogram(stat = "count", fill = "lightblue") +
-  xlab(colnames(student_surveys)[i])
+  theme(
+    plot.title = element_text(size = 12, face = "bold",hjust = 0.5),
+    axis.title.x = element_blank()
+  ) +
+  ggtitle(student_survey_title[i])
   )
   
   
@@ -48,7 +164,7 @@ print(
 
 
 
-```{r organization_survey}
+```{r organization_survey, echo=FALSE, message =FALSE, warning = FALSE}
 #Reading Organization Surveys
 organization_survey_spring_2019 <- read_csv("data/Organization Survey_Spring 2019.csv")
 organization_survey_summer_2019 <- read_csv("data/Organization Survey_Summer 2019.csv")
