@@ -14,7 +14,8 @@ library(stringr)
 library(readr)
 library(ggplot2)
 library(tidyr)
-
+library(webshot) #for taking an html widget and saving it as pdf or png 
+library(htmlwidgets)
 
 ```
 
@@ -28,6 +29,8 @@ student_survey_summer_2019 <- mutate(student_survey_summer_2019, cohort = "Summe
 student_survey_fall_2019 <- read_csv("data/Student survey_Fall 2019.csv")
 student_survey_fall_2019 <- mutate(student_survey_fall_2019, cohort = "Fall 2019")
 student_surveys <- bind_rows(student_survey_spring_2019,student_survey_summer_2019, student_survey_fall_2019)
+
+pre_standarize <- student_surveys
 
 
 # These questions need to be removed from the histograms because there are too many answers 
@@ -162,6 +165,54 @@ print(
   
 ```
 
+
+## "What aspect(s) of the program/course were most helpful to you in achieving your learning goals?"
+
+```{r what_aspects,echo=FALSE, message =FALSE, warning = FALSE}
+
+library(wordcloud)
+library(RColorBrewer)
+library(tm) #to create corpus 
+library(wordcloud2)
+
+#Create a vector containing only the text
+text <- pre_standarize$`What aspect(s) of the program/course were most helpful to you in achieving your learning goals?`
+
+# Create a corpus  
+docs <- Corpus(VectorSource(text))
+
+#standardize corpus
+docs <- docs %>%
+  tm_map(removeNumbers) %>%
+  tm_map(removePunctuation) %>%
+  tm_map(stripWhitespace)
+docs <- tm_map(docs, content_transformer(tolower))
+docs <- tm_map(docs, removeWords, stopwords("english"))
+
+#create a document matrix 
+dtm <- TermDocumentMatrix(docs) 
+matrix <- as.matrix(dtm) 
+words <- sort(rowSums(matrix),decreasing=TRUE) 
+df <- data.frame(word = names(words),freq=words)
+df$word <- as.character(df$word)
+target <- c("also", "project", "really")
+'%ni%' <- Negate('%in%')
+df <- filter(df, word %ni% target)
+df$word <- as.factor(df$word)
+
+
+
+set.seed(27)
+
+#wordcloud(words = df$word, freq = df$freq, min.freq = 1,max.words=200, random.order=FALSE, rot.per=0.35, colors=brewer.pal(8, "Dark2"))
+
+w1 <- wordcloud2(data=df,color='random-dark', shuffle = FALSE)
+
+saveWidget(w1, '1.html', selfcontained = F)
+webshot('1.html', '1.png', vwidth=700,vheight=500, delay = 5)
+```
+
+
 ## Organization Evaluation Histograms
 
 ```{r organization_survey, echo=FALSE, message =FALSE, warning = FALSE}
@@ -173,6 +224,8 @@ organization_survey_summer_2019 <- mutate(organization_survey_summer_2019, cohor
 organization_survey_fall_2019 <- read_csv("data/Organization Survey_Fall 2019.csv")
 organization_survey_fall_2019 <- mutate(organization_survey_fall_2019, cohort = "Fall 2019")
 organization_surveys <- bind_rows(organization_survey_spring_2019,organization_survey_summer_2019, organization_survey_fall_2019)
+
+prestandardize <- organization_surveys
 
 
 # These questions need to be removed from the histograms because there are too many answers 
@@ -285,6 +338,133 @@ print(
 }
 ```
 
+
+## "Please describe how you intend to use or build upon the work done by your consultant(s) (if at all)."
+
+```{r org_word_Cloud2, echo=FALSE, message =FALSE, warning = FALSE}
+library(widgetframe)
+#Create a vector containing only the text
+text <- prestandardize$`Please describe how you intend to use or build upon the work done by your consultant(s) (if at all).`
+
+# Create a corpus  
+docs <- Corpus(VectorSource(text))
+
+#standardize corpus
+docs <- docs %>%
+  tm_map(removeNumbers) %>%
+  tm_map(removePunctuation) %>%
+  tm_map(stripWhitespace)
+docs <- tm_map(docs, content_transformer(tolower))
+docs <- tm_map(docs, removeWords, stopwords("english"))
+
+#create a document matrix 
+dtm <- TermDocumentMatrix(docs) 
+matrix <- as.matrix(dtm) 
+words <- sort(rowSums(matrix),decreasing=TRUE) 
+df <- data.frame(word = names(words),freq=words)
+df$word <- as.character(df$word)
+target <- c("also", "project", "really", "will","work","use","program")
+'%ni%' <- Negate('%in%')
+df <- filter(df, word %ni% target)
+df$word <- as.factor(df$word)
+
+
+
+set.seed(27)
+
+#wordcloud(words = df$word, freq = df$freq, min.freq = 1,max.words=200, random.order=FALSE, rot.per=0.1, colors=brewer.pal(8, "Dark2"))
+
+w2 <- wordcloud2(data=df, color='random-dark', shuffle = FALSE)
+saveWidget(w2, '2.html', selfcontained = F)
+webshot('2.html', '2.png', vwidth=700,vheight=500, delay = 5)
+
+```
+
+
+## "What suggestions for improvement do you have for future iterations of this program or course?"
+
+```{r org_word_Cloud3, echo=FALSE, message =FALSE, warning = FALSE}
+
+#Create a vector containing only the text
+text <- prestandardize$`What suggestions for improvement do you have for future iterations of this program or course?`
+
+# Create a corpus  
+docs <- Corpus(VectorSource(text))
+
+#standardize corpus
+docs <- docs %>%
+  tm_map(removeNumbers) %>%
+  tm_map(removePunctuation) %>%
+  tm_map(stripWhitespace)
+docs <- tm_map(docs, content_transformer(tolower))
+docs <- tm_map(docs, removeWords, stopwords("english"))
+
+#create a document matrix 
+dtm <- TermDocumentMatrix(docs) 
+matrix <- as.matrix(dtm) 
+words <- sort(rowSums(matrix),decreasing=TRUE) 
+df <- data.frame(word = names(words),freq=words)
+df$word <- as.character(df$word)
+target <- c("also", "project", "really", "will","work", "program")
+'%ni%' <- Negate('%in%')
+df <- filter(df, word %ni% target)
+df$word <- as.factor(df$word)
+
+
+
+set.seed(27)
+
+
+#wordcloud(words = df$word, freq = df$freq, min.freq = 1,max.words=200, random.order=FALSE, rot.per=0.1, colors=brewer.pal(8, "Dark2"))
+
+w3 <- wordcloud2(data=df, size=1.6, color='random-dark', shuffle = FALSE)
+saveWidget(w3, '3.html', selfcontained = F)
+webshot('3.html', '3.png', vwidth=700,vheight=500, delay = 5)
+
+
+```
+
+## "Is there anything else that you would like to share about your experience? (Optional)"
+
+```{r org_word_Cloud4, echo=FALSE, message =FALSE, warning = FALSE}
+
+#Create a vector containing only the text
+text <- prestandardize$`Is there anything else that you would like to share about your experience? (Optional)`
+
+# Create a corpus  
+docs <- Corpus(VectorSource(text))
+
+#standardize corpus
+docs <- docs %>%
+  tm_map(removeNumbers) %>%
+  tm_map(removePunctuation) %>%
+  tm_map(stripWhitespace)
+docs <- tm_map(docs, content_transformer(tolower))
+docs <- tm_map(docs, removeWords, stopwords("english"))
+
+#create a document matrix 
+dtm <- TermDocumentMatrix(docs) 
+matrix <- as.matrix(dtm) 
+words <- sort(rowSums(matrix),decreasing=TRUE) 
+df <- data.frame(word = names(words),freq=words)
+df$word <- as.character(df$word)
+target <- c("also", "project", "really", "will","work","program")
+'%ni%' <- Negate('%in%')
+df <- filter(df, word %ni% target)
+df$word <- as.factor(df$word)
+
+
+
+set.seed(27)
+
+
+#wordcloud(words = df$word, freq = df$freq, min.freq = 1,max.words=200, random.order=FALSE, rot.per=0.1, colors=brewer.pal(8, "Dark2"))
+wordcloud2(data=df, size=1.6, color='random-dark', shuffle = FALSE)
+
+
+
+```
+
 ## CONNECT Program Sectors
 
 
@@ -312,7 +492,7 @@ print(
 
 ## Connect Project Types 
 
-```{r proj_types,echo=FALSE, message =FALSE, warning = FALSE, fig.width=20,fig.height=8}
+```{r proj_types,echo=FALSE, message =FALSE, warning = FALSE, fig.width=20,fig.height=10}
 
 
 #Project type
