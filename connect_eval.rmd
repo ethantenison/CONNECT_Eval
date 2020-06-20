@@ -1,6 +1,7 @@
 ---
 title: "Connect Evaluation"
 output:
+  pdf_document: default
   html_document:
     df_print: paged
 ---
@@ -459,8 +460,9 @@ set.seed(27)
 
 
 #wordcloud(words = df$word, freq = df$freq, min.freq = 1,max.words=200, random.order=FALSE, rot.per=0.1, colors=brewer.pal(8, "Dark2"))
-wordcloud2(data=df, size=1.6, color='random-dark', shuffle = FALSE)
-
+w4 <- wordcloud2(data=df, size=1.6, color='random-dark', shuffle = FALSE)
+saveWidget(w4, '4.html', selfcontained = F)
+webshot('4.html', '4.png', vwidth=700,vheight=500, delay = 5)
 
 
 ```
@@ -515,3 +517,15 @@ print(
 
 ```
 
+
+```{r satisfaction,echo=FALSE, message =FALSE, warning = FALSE}
+library(readxl)
+#Dataframe from connect database on whether nonprofits contributed to stipend
+#I went ahead and changed the cohorts columns to say Fall 2019 etc. 
+org_financial_contribution <- read_excel("data/CONNECT _database_ project_info_6.9.2020.xlsx", 
+    sheet = "Financial", col_types = c("text", 
+        "text", "skip", "numeric", "text", 
+        "skip"))
+
+
+```
