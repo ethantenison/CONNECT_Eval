@@ -517,6 +517,7 @@ print(
 
 ```
 
+# Do nonprofits that pay a percentage of the budget have better reviews? 
 
 ```{r satisfaction,echo=FALSE, message =FALSE, warning = FALSE}
 library(readxl)
@@ -526,6 +527,16 @@ org_financial_contribution <- read_excel("data/CONNECT _database_ project_info_6
     sheet = "Financial", col_types = c("text", 
         "text", "skip", "numeric", "text", 
         "skip"))
+for (i in 1:length(org_financial_contribution$`Project Contribution`)){
+                  if(org_financial_contribution$`Project Contribution`[i] == 0){        
+                    org_financial_contribution$contributing[i] <- "no"
+                  }
+                 else{        
+                    org_financial_contribution$contributing[i] <- "yes"
+                 }
+}
+
+# I need to manually the set the contributing variable for all the various AISD programs 
 
 
 ```
