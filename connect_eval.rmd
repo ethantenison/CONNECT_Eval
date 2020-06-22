@@ -673,6 +673,8 @@ for (i in 1:length(organization_surveys$to_what_extent_did_your_experience_meet_
       }
 }
 
+organization_surveys$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course <- as.numeric(organization_surveys$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course)
+
 for (i in 1:length(organization_surveys$how_useful_was_this_experience_for_you_or_your_organization)){
       if(organization_surveys$how_useful_was_this_experience_for_you_or_your_organization[i] == "Extremely useful"){        
         organization_surveys$how_useful_was_this_experience_for_you_or_your_organization[i] <- "5"
@@ -691,6 +693,8 @@ for (i in 1:length(organization_surveys$how_useful_was_this_experience_for_you_o
       }
 }
 
+organization_surveys$how_useful_was_this_experience_for_you_or_your_organization <- as.numeric(organization_surveys$how_useful_was_this_experience_for_you_or_your_organization)
+
 for (i in 1:length(organization_surveys$how_satisfied_are_you_with_the_relationship_with_your_consultant_s)){
       if(organization_surveys$how_satisfied_are_you_with_the_relationship_with_your_consultant_s[i] == "Extremely satisfied"){        
         organization_surveys$how_satisfied_are_you_with_the_relationship_with_your_consultant_s[i] <- "5"
@@ -708,6 +712,7 @@ for (i in 1:length(organization_surveys$how_satisfied_are_you_with_the_relations
         organization_surveys$how_satisfied_are_you_with_the_relationship_with_your_consultant_s[i] <- "1"
       }
 }
+organization_surveys$how_satisfied_are_you_with_the_relationship_with_your_consultant_s <- as.numeric(organization_surveys$how_satisfied_are_you_with_the_relationship_with_your_consultant_s)
 
 #time commitment is slightly different. It can't be easily converted to a likert scale
 for (i in 1:length(organization_surveys$how_would_you_rate_the_time_commitment_and_resources_required_of_you_during_this_program_course)){
@@ -727,6 +732,7 @@ for (i in 1:length(organization_surveys$how_would_you_rate_the_time_commitment_a
         organization_surveys$how_would_you_rate_the_time_commitment_and_resources_required_of_you_during_this_program_course[i] <- "1"
       }
 }
+organization_surveys$how_would_you_rate_the_time_commitment_and_resources_required_of_you_during_this_program_course <- as.numeric(organization_surveys$how_would_you_rate_the_time_commitment_and_resources_required_of_you_during_this_program_course)
 
 for (i in 1:length(organization_surveys$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish)){
       if(organization_surveys$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish[i] == "Extremely effective"){        
@@ -745,6 +751,7 @@ for (i in 1:length(organization_surveys$how_effective_was_your_consultant_s_in_l
         organization_surveys$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish[i] <- "1"
       }
 }
+organization_surveys$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish <- as.numeric(organization_surveys$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish)
 
 for (i in 1:length(organization_surveys$how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization)){
       if(organization_surveys$how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization[i] == "Extremely effective"){        
@@ -764,6 +771,8 @@ for (i in 1:length(organization_surveys$how_effective_was_your_consultant_s_in_c
       }
 }
 
+organization_surveys$how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization <- as.numeric(organization_surveys$how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization)
+
 for (i in 1:length(organization_surveys$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization)){
       if(organization_surveys$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization[i] == "Extremely effective"){        
         organization_surveys$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization[i] <- "5"
@@ -782,6 +791,8 @@ for (i in 1:length(organization_surveys$how_effective_was_your_consultant_s_in_r
       }
 }
 
+organization_surveys$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization <- as.numeric(organization_surveys$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization)
+
 for (i in 1:length(organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization)){
       if(organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization[i] == "Extremely effective"){        
         organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization[i] <- "5"
@@ -799,7 +810,19 @@ for (i in 1:length(organization_surveys$how_effective_was_your_consultant_s_in_s
         organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization[i] <- "1"
       }
 }
+organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization <- as.numeric(organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization)
 
+#creating a survey score
+organization_surveys <- mutate(organization_surveys, survey_score = (to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course + how_useful_was_this_experience_for_you_or_your_organization + how_satisfied_are_you_with_the_relationship_with_your_consultant_s + how_would_you_rate_the_time_commitment_and_resources_required_of_you_during_this_program_course + how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish + how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization + how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization + how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization))
+
+#Do orgs that contribute have higher survey ratings? The answer is no. OUt of a total of 40 possible points, those that did not contribute had an average score of 33.9 while those that did not had a score of 34.3, but based on the standard deviation, there is more variablility in the results for those that picked no. 
+contributing_yes <- filter(organization_surveys, contributed == "yes")
+print(mean(contributing_yes$survey_score))
+print(sd(contributing_yes$survey_score))
+
+contributing_no <- filter(organization_surveys, contributed == "no")
+print(mean(contributing_no$survey_score))
+print(sd(contributing_no$survey_score))
 
 
 ```
