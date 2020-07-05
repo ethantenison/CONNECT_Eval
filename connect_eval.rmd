@@ -119,7 +119,7 @@ student_surveys$`how_much_do_you_believe_that_you_improved_in_synthesizing_and_p
 student_surveys$`how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization` <- factor(
     student_surveys$`how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization`,
     levels =
-        c("Slightly useful", "Moderately useful", "Very useful", "Extremely useful"),
+        c("Not at all useful", "Slightly useful", "Moderately useful", "Very useful", "Extremely useful"),
     exclude = NULL,
     ordered = TRUE
 )
@@ -127,7 +127,7 @@ student_surveys$`how_useful_do_you_believe_your_project_and_final_deliverable_wa
 student_surveys$`how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables` <- factor(
     student_surveys$`how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables`,
     levels =
-        c("Somewhat unclear", "Neither clear nor unclear", "Somewhat clear", "Extremely clear"),
+        c("Extremely unclear", "Somewhat unclear", "Neither clear nor unclear", "Somewhat clear", "Extremely clear"),
     exclude = NULL,
     ordered = TRUE
 )
@@ -135,7 +135,7 @@ student_surveys$`how_clear_were_expectations_from_your_client_about_your_project
 student_surveys$`how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization` <- factor(
     student_surveys$`how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization`,
     levels =
-        c("Slightly too little", "About right", "Slightly too much"),
+        c("Far too little", "Slightly too little", "About right", "Slightly too much", "Far too much"),
     exclude = NULL,
     ordered = TRUE
 )
@@ -143,7 +143,15 @@ student_surveys$`how_would_you_rate_the_time_commitment_and_work_load_required_o
 student_surveys$`to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course` <- factor(
     student_surveys$`to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course`,
     levels =
-        c("Short of expectations", "Equals expectations", "Exceeds expectations", "Far exceeds expectations" ),
+        c("Far short of expectation", "Short of expectations", "Equals expectations", "Exceeds expectations", "Far exceeds expectations" ),
+    exclude = NULL,
+    ordered = TRUE
+)
+
+student_surveys$`how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project` <- factor(
+    student_surveys$`how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project`,
+    levels =
+        c("Not at all", "A little", "A moderate amount", "A lot", "A great deal" ),
     exclude = NULL,
     ordered = TRUE
 )
@@ -655,6 +663,7 @@ organization_surveys$how_effective_was_your_consultant_s_in_recommending_clear_a
 organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization[is.na(organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization)] <- "3"
 
 
+#converting survey answers to a likert scale
 for (i in 1:length(organization_surveys$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course)){
       if(organization_surveys$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] == "Far exceeds expectations"){        
         organization_surveys$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] <- "5"
@@ -821,6 +830,275 @@ print(mean(contributing_yes$survey_score))
 print(sd(contributing_yes$survey_score))
 
 contributing_no <- filter(organization_surveys, contributed == "no")
+print(mean(contributing_no$survey_score))
+print(sd(contributing_no$survey_score))
+
+
+```
+
+
+# Do students who work for nonprofits that contribute have higher survey scores? 
+
+
+```{r student_scores}
+
+#converting survey answers to a likert scale
+student_score <- student_surveys
+
+#This right here turns all the factor columns to numeric 
+student_score[sapply(student_score, is.factor)] <- lapply(student_score[sapply(student_score, is.factor)], as.character)
+
+# how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity
+for (i in 1:length(student_score$how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity)){
+      if(student_score$how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity[i] == "A great deal"){        
+        student_score$how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity[i] <- "5"
+      }
+      else if(student_score$how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity[i] == "A lot") {        
+        student_score$how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity[i] <- "4"
+      }
+      else if(student_score$how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity[i] == "A moderate amount") {        
+        student_score$how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity[i] <- "3"
+      }
+      else if(student_score$how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity[i] == "A little") {        
+        student_score$how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity[i] <- "2"
+      }
+      else if(student_score$how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity[i] == "None at all") {        
+        student_score$how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity[i] <- "1"
+      }
+}
+
+# how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback
+for (i in 1:length(student_score$how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback)){
+      if(student_score$how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback[i] == "A great deal"){        
+        student_score$how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback[i] <- "5"
+      }
+      else if(student_score$how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback[i] == "A lot") {        
+        student_score$how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback[i] <- "4"
+      }
+      else if(student_score$how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback[i] == "A moderate amount") {        
+        student_score$how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback[i] <- "3"
+      }
+      else if(student_score$how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback[i] == "A little") {        
+        student_score$how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback[i] <- "2"
+      }
+      else if(student_score$how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback[i] == "None at all") {        
+        student_score$how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback[i] <- "1"
+      }
+}
+
+# how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients
+for (i in 1:length(student_score$how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients)){
+      if(student_score$how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients[i] == "A great deal"){        
+        student_score$how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients[i] <- "5"
+      }
+      else if(student_score$how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients[i] == "A lot") {        
+        student_score$how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients[i] <- "4"
+      }
+      else if(student_score$how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients[i] == "A moderate amount") {        
+        student_score$how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients[i] <- "3"
+      }
+      else if(student_score$how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients[i] == "A little") {        
+        student_score$how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients[i] <- "2"
+      }
+      else if(student_score$how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients[i] == "None at all") {        
+        student_score$how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients[i] <- "1"
+      }
+}
+
+# how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client
+for (i in 1:length(student_score$how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client)){
+      if(student_score$how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client[i] == "A great deal"){        
+        student_score$how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client[i] <- "5"
+      }
+      else if(student_score$how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client[i] == "A lot") {        
+        student_score$how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client[i] <- "4"
+      }
+      else if(student_score$how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client[i] == "A moderate amount") {        
+        student_score$how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client[i] <- "3"
+      }
+      else if(student_score$how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client[i] == "A little") {        
+        student_score$how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client[i] <- "2"
+      }
+      else if(student_score$how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client[i] == "None at all") {        
+        student_score$how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client[i] <- "1"
+      }
+}
+
+# how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support 
+for (i in 1:length(student_score$how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support)){
+      if(student_score$how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support[i] == "A great deal"){        
+        student_score$how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support[i] <- "5"
+      }
+      else if(student_score$how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support[i] == "A lot") {        
+        student_score$how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support[i] <- "4"
+      }
+      else if(student_score$how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support[i] == "A moderate amount") {        
+        student_score$how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support[i] <- "3"
+      }
+      else if(student_score$how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support[i] == "A little") {        
+        student_score$how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support[i] <- "2"
+      }
+      else if(student_score$how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support[i] == "None at all") {        
+        student_score$how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support[i] <- "1"
+      }
+}
+
+# how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner
+for (i in 1:length(student_score$how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner)){
+      if(student_score$how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner[i] == "A great deal"){        
+        student_score$how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner[i] <- "5"
+      }
+      else if(student_score$how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner[i] == "A lot") {        
+        student_score$how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner[i] <- "4"
+      }
+      else if(student_score$how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner[i] == "A moderate amount") {        
+        student_score$how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner[i] <- "3"
+      }
+      else if(student_score$how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner[i] == "A little") {        
+        student_score$how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner[i] <- "2"
+      }
+      else if(student_score$how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner[i] == "None at all") {        
+        student_score$how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner[i] <- "1"
+      }
+}
+
+# how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization
+for (i in 1:length(student_score$how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization)){
+      if(student_score$how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization[i] == "Extremely useful"){        
+        student_score$how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization[i] <- "5"
+      }
+      else if(student_score$how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization[i] == "Very useful") {        
+        student_score$how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization[i] <- "4"
+      }
+      else if(student_score$how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization[i] == "Moderately useful") {        
+        student_score$how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization[i] <- "3"
+      }
+      else if(student_score$how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization[i] == "Slightly useful") {        
+        student_score$how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization[i] <- "2"
+      }
+      else if(student_score$how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization[i] == "Not at all useful") {        
+        student_score$how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization[i] <- "1"
+      }
+}
+
+# how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables
+for (i in 1:length(student_score$how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables)){
+      if(student_score$how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables[i] == "Extremely clear"){        
+        student_score$how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables[i] <- "5"
+      }
+      else if(student_score$how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables[i] == "Somewhat clear") {        
+        student_score$how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables[i] <- "4"
+      }
+      else if(student_score$how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables[i] == "Neither clear nor unclear") {        
+        student_score$how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables[i] <- "3"
+      }
+      else if(student_score$how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables[i] == "Somewhat unclear") {        
+        student_score$how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables[i] <- "2"
+      }
+      else if(student_score$how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables[i] == "Extremely unclear") {        
+        student_score$how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables[i] <- "1"
+      }
+}
+
+# how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization
+for (i in 1:length(student_score$how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization)){
+      if(student_score$how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization[i] == "Far too much"){        
+        student_score$how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization[i] <- "5"
+      }
+      else if(student_score$how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization[i] == "Slightly too much") {        
+        student_score$how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization[i] <- "4"
+      }
+      else if(student_score$how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization[i] == "About right") {        
+        student_score$how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization[i] <- "3"
+      }
+      else if(student_score$how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization[i] == "Slightly too little") {        
+        student_score$how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization[i] <- "2"
+      }
+      else if(student_score$how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization[i] == "Far too little") {        
+        student_score$how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization[i] <- "1"
+      }
+}
+
+# to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course
+for (i in 1:length(student_score$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course)){
+      if(student_score$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] == "Far exceeds expectations"){        
+        student_score$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] <- "5"
+      }
+      else if(student_score$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] == "Exceeds expectations") {        
+        student_score$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] <- "4"
+      }
+      else if(student_score$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] == "Equals expectations") {        
+        student_score$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] <- "3"
+      }
+      else if(student_score$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] == "Short of expectations") {        
+        student_score$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] <- "2"
+      }
+      else if(student_score$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] == "Far short of expectation") {        
+        student_score$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] <- "1"
+      }
+}
+
+
+# how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project
+for (i in 1:length(student_score$how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project)){
+      if(student_score$how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project[i] == "A great deal"){        
+        student_score$how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project[i] <- "5"
+      }
+      else if(student_score$how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project[i] == "A lot") {        
+        student_score$how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project[i] <- "4"
+      }
+      else if(student_score$how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project[i] == "A moderate amount") {        
+        student_score$how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project[i] <- "3"
+      }
+      else if(student_score$how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project[i] == "A little") {        
+        student_score$how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project[i] <- "2"
+      }
+      else if(student_score$how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project[i] == "Not at all") {        
+        student_score$how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project[i] <- "1"
+      }
+}
+
+```
+
+
+```{r print_out_student_score}
+#list of variables to convert to numeric
+to_numeric <- c('how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity',
+                                                        'how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback',
+                                                        'how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients',
+                                          'how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client',
+                                                        'how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support',
+                                                        'how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner',
+                                                        'how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization',
+                                                        'how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables',
+                                                        'how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization',
+                                                        'to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course',                                                        'how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project')
+#This right here turns all them to numeric type to be added
+student_score[to_numeric] <- sapply(student_score[to_numeric],as.numeric)
+ 
+
+#creating a survey score
+student_score <- mutate(student_score, survey_score = (how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity +
+                                                        how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback +
+                                                        how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients +
+                                          how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client +
+                                                        how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support+
+                                                        how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner +
+                                                        how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization +
+                                                        how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables +
+                                                        how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization +
+                                                        to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course +
+                                                        how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project
+                                                         ))
+
+
+
+#Do orgs that contribute have higher survey ratings? The answer is no. OUt of a total of 40 possible points, those that did not contribute had an average score of 33.9 while those that did not had a score of 34.3, but based on the standard deviation, there is more variablility in the results for those that picked no. 
+contributing_yes <- filter(student_score, contributed == "yes")
+print(mean(contributing_yes$survey_score))
+print(sd(contributing_yes$survey_score))
+
+contributing_no <- filter(student_score, contributed == "no")
 print(mean(contributing_no$survey_score))
 print(sd(contributing_no$survey_score))
 
