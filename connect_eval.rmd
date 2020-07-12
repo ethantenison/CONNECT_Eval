@@ -30,13 +30,16 @@ student_survey_summer_2019 <- read_csv("data/Student survey_Summer 2019.csv")
 student_survey_summer_2019 <- mutate(student_survey_summer_2019, cohort = "Summer 2019")
 student_survey_fall_2019 <- read_csv("data/Student survey_Fall 2019.csv")
 student_survey_fall_2019 <- mutate(student_survey_fall_2019, cohort = "Fall 2019")
-student_surveys <- bind_rows(student_survey_spring_2019,student_survey_summer_2019, student_survey_fall_2019)
+student_survey_spring_2020 <- read_csv("data/Student survey_Spring 2020.csv")
+student_survey_spring_2020 <- mutate(student_survey_spring_2019, cohort = "Spring 2020")
+
+student_surveys <- bind_rows(student_survey_spring_2019,student_survey_summer_2019, student_survey_fall_2019, student_survey_spring_2020)
 
 pre_standarize <- student_surveys
 
 
 # These questions need to be removed from the histograms because there are too many answers 
-student_surveys <- select(student_surveys, -c("Your Name",
+student_surveys <- select(student_surveys, -c(
                                                "What aspect(s) of the program/course were most helpful to you in achieving your learning goals?",
                                                "What suggestions for improvement do you have for future iterations of this program or course?",
                                                "What resources did you find most helpful for your learning and/or completing your client project? - Other - Text","What resources did you find most helpful for your learning and/or completing your client project? - Selected Choice",
@@ -205,7 +208,7 @@ matrix <- as.matrix(dtm)
 words <- sort(rowSums(matrix),decreasing=TRUE) 
 df <- data.frame(word = names(words),freq=words)
 df$word <- as.character(df$word)
-target <- c("also", "project", "really")
+target <- c("also", "project", "really", "helpful", "able", "helped", "felt", "wasnt", "etc", "asks", "move", "gave")
 '%ni%' <- Negate('%in%')
 df <- filter(df, word %ni% target)
 df$word <- as.factor(df$word)
@@ -233,13 +236,15 @@ organization_survey_summer_2019 <- read_csv("data/Organization Survey_Summer 201
 organization_survey_summer_2019 <- mutate(organization_survey_summer_2019, cohort = "Summer 2019")
 organization_survey_fall_2019 <- read_csv("data/Organization Survey_Fall 2019.csv")
 organization_survey_fall_2019 <- mutate(organization_survey_fall_2019, cohort = "Fall 2019")
-organization_surveys <- bind_rows(organization_survey_spring_2019,organization_survey_summer_2019, organization_survey_fall_2019)
+organization_survey_spring_2020 <- read_csv("data/Organization Survey_Spring 2020.csv")
+organization_survey_spring_2020 <- mutate(organization_survey_spring_2019, cohort = "Spring 2020")
+organization_surveys <- bind_rows(organization_survey_spring_2019,organization_survey_summer_2019, organization_survey_fall_2019, organization_survey_spring_2020)
 
 prestandardize <- organization_surveys
 
 
 # These questions need to be removed from the histograms because there are too many answers 
-organization_surveys <- select(organization_surveys, -c("Your Organization's Name",
+organization_surveys <- select(organization_surveys, -c(
                                                         "Please describe how you intend to use or build upon the work done by your consultant(s) (if at all).",
                                                         "What did you and/or your organization learn from your participation in this program/course?",
                                                         "What suggestions for improvement do you have for future iterations of this program or course?",
@@ -485,45 +490,53 @@ webshot('4.html', '4.png', vwidth=700,vheight=500, delay = 5)
 library(readxl)
 sectors <- read_excel("data/CONNECT _database_ project_info_6.9.2020.xlsx")
 
-print(
-      ggplot(sectors, aes(x=Sector)) +
-        geom_histogram(stat = "count", fill = "lightblue") +
-        theme(
-          plot.title = element_text(size = 20, face = "bold",hjust = 0.5),
-          axis.title.x = element_blank(),
-          axis.title.y = element_text(size = 12),
-          axis.text.x = element_text(size = 12),
-          axis.text.y = element_text(size = 12)
-        ) +
-        ggtitle("CONNECT Project Sectors")
+
+p <-       ggplot(sectors, aes(x=Sector, fill = Sector)) +
+                  geom_histogram(stat = "count") +
+                  theme_minimal() +
+                  theme(
+                    text=element_text(size=25),
+                    plot.title = element_text(face = "bold",hjust = 0.5, size = 30),
+                    axis.title.x = element_blank(),
+                    axis.title.y = element_text(vjust = 2),
+                    axis.text.x = element_blank(),
+                    axis.text.y = element_text()
+                  ) +
+                  labs(fill = "Nonprofit Sector", y = "Number of Projects") +
+                  ggtitle("CONNECT Project Sectors")
   
-)
+p
+
+ggsave("project_sectors.png", dpi = 500 )
 
 ```
 
 ## Connect Project Types 
 
-```{r proj_types,echo=FALSE, message =FALSE, warning = FALSE, fig.width=20,fig.height=10}
+```{r proj_types,echo=FALSE, message =FALSE, warning = FALSE, fig.width=15,fig.height=8}
 
 
 #Project type
 project_type <- read_excel("data/CONNECT _database_ project_info_6.9.2020.xlsx", 
     sheet = "Project Type")
 
-print(
-      ggplot(project_type, aes(x=`Project Category (primary)`)) +
-        geom_histogram(stat = "count", fill = "lightblue") +
-        theme(
-          plot.title = element_text(size = 16, face = "bold",hjust = 0.5),
-          axis.title.x = element_blank(),
-          axis.title.y = element_text(size = 12),
-          axis.text.x = element_text(size = 12),
-          axis.text.y = element_text(size = 12)
-        ) +
-        ggtitle("CONNECT Project Types")
+p <-      ggplot(project_type, aes(x=`Project Category (primary)`, fill = `Project Category (primary)`)) +
+                geom_histogram(stat = "count") +
+                theme_minimal() +
+                theme(
+                  text=element_text(size=25),
+                  plot.title = element_text(size = 30, face = "bold",hjust = 0.5),
+                  axis.title.x = element_blank(),
+                  axis.title.y = element_text(vjust = 2),
+                  axis.text.x = element_blank(),
+                  axis.text.y = element_text()
+                ) +
+                ggtitle("CONNECT Project Types")+
+                labs(fill = "Project Categories", y = "Number of Projects") 
   
-)
+p
 
+ggsave("project_type.png", dpi = 500 )
 ```
 
 # Do nonprofits that pay a percentage of the budget have better reviews? 
@@ -836,6 +849,86 @@ print(sd(contributing_no$survey_score))
 
 ```
 
+# Plot average score by cohort
+
+
+```{r org_cohort_avg}
+
+#average score by cohort
+org_by_cohort <- organization_surveys %>% group_by(cohort) %>% summarize(average_score = mean(survey_score), std = sd(survey_score))
+org_by_cohort$cohort <- as.factor(org_by_cohort$cohort)
+
+
+# You need to reorder levels in factor
+library(tidyverse)
+org_by_cohort <- org_by_cohort %>% 
+                              mutate(cohort = fct_relevel(cohort, c("Spring 2019", "Summer 2019", "Fall 2019"))) %>%
+                              arrange(cohort)
+
+# Plot the average scores with error bars 
+p<-ggplot(data=org_by_cohort, aes(x=cohort, y=average_score, fill =cohort)) +
+  theme_minimal() +
+  geom_bar(stat="identity", position = position_dodge()) +
+  geom_errorbar(aes(ymin=average_score-std, ymax=average_score+std), width=.2,
+               position=position_dodge(.9))+
+# geom_text(aes(label=average_score), vjust=1.6, color="white", size=3.5) +
+  theme(plot.title = element_text(hjust = 0.5),
+        text=element_text(face = "bold", size=14),
+        axis.text.y = element_text( hjust = 2)) +
+  scale_fill_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
+  ggtitle("Average Org Survey Score by Cohort") +
+  labs(y="Average Score", x = "", fill = "Cohort") 
+  
+p
+
+```
+
+# Now lets look at each likert scale question
+
+
+```{r likert_org}
+
+org_likerts <- organization_surveys[, 3:13]
+org_likerts <- select(org_likerts, -c("are_you_willing_for_the_program_or_the_rgk_center_to_share_highlights_of_your_organizations_project_in_marketing_evaluation_and_recruitment_materials_in_the_future"))
+question_title <- colnames(org_likerts)
+
+org_likerts <- org_likerts %>% group_by(cohort) %>% summarize(average_score = mean(how_satisfied_are_you_with_the_relationship_with_your_consultant_s), std = sd(how_satisfied_are_you_with_the_relationship_with_your_consultant_s))
+
+for(i in 1:9){
+  
+              
+
+              #average score by cohort
+              org_likerts <- org_likerts %>% group_by(cohort) %>% summarize(average_score = mean(org_likerts[[i]]), std = sd(org_likerts[[i]]))
+              org_likerts$cohort <- as.factor(org_likerts$cohort)
+              
+              
+              
+              # You need to reorder levels in factor
+              library(tidyverse)
+              org_likerts <- org_likerts %>% 
+                                            mutate(cohort = fct_relevel(cohort, c("Spring 2019", "Summer 2019", "Fall 2019"))) %>%
+                                            arrange(cohort)
+              
+              # Plot the average scores with error bars 
+              p<-ggplot(data=org_likerts, aes(x=cohort, y=average_score, fill =cohort)) +
+                theme_minimal() +
+                geom_bar(stat="identity", position = position_dodge()) +
+                geom_errorbar(aes(ymin=average_score-std, ymax=average_score+std), width=.2,
+                             position=position_dodge(.9))+
+                theme(plot.title = element_text(hjust = 0.5),
+                      text=element_text(face = "bold", size=10),
+                      axis.text.y = element_text( hjust = 2)) +
+                scale_fill_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
+                ggtitle(question_title[i]) +
+                labs(y="Average Score", x = "", fill = "Cohort") 
+                
+              print(p)
+
+
+}
+```
+
 
 # Do students who work for nonprofits that contribute have higher survey scores? 
 
@@ -1091,18 +1184,87 @@ student_score <- mutate(student_score, survey_score = (how_much_do_you_believe_t
                                                         how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project
                                                          ))
 
-
-
-#Do orgs that contribute have higher survey ratings? The answer is no. OUt of a total of 40 possible points, those that did not contribute had an average score of 33.9 while those that did not had a score of 34.3, but based on the standard deviation, there is more variablility in the results for those that picked no. 
-contributing_yes <- filter(student_score, contributed == "yes")
-print(mean(contributing_yes$survey_score))
-print(sd(contributing_yes$survey_score))
-
-contributing_no <- filter(student_score, contributed == "no")
-print(mean(contributing_no$survey_score))
-print(sd(contributing_no$survey_score))
+#Save this data so I can put in org and contributing information 
+#write.csv(student_score,"student_to_add_orgs.csv")
 
 
 ```
 
+
+# Separating those that contributed and those that did not.
+
+
+```{r student_surveys_contributing}
+student_plusorgs <- read_csv("data/student_plusorgs.csv")
+
+#Do orgs that contribute have higher survey ratings? The answer is no. OUt of a total of 40 possible points, those that did not contribute had an average score of 33.9 while those that did not had a score of 34.3, but based on the standard deviation, there is more variablility in the results for those that picked no. 
+contributing_yes <- filter(student_plusorgs, contributing == "yes")
+print(mean(contributing_yes$survey_score))
+print(sd(contributing_yes$survey_score))
+
+contributing_no <- filter(student_plusorgs, contributing == "no")
+print(mean(contributing_no$survey_score))
+print(sd(contributing_no$survey_score))
+
+
+#average score by cohort
+student_by_cohort <- student_plusorgs %>% group_by(cohort) %>% summarize(average_score = mean(survey_score), std = sd(survey_score))
+student_by_cohort$cohort <- as.factor(student_by_cohort$cohort)
+
+
+# You need to reorder levels in factor
+library(tidyverse)
+student_by_cohort <- student_by_cohort %>% 
+                              mutate(cohort = fct_relevel(cohort, c("Spring 2019", "Summer 2019", "Fall 2019"))) %>%
+                              arrange(cohort)
+
+
+# Plot the average scores with error bars 
+p<-ggplot(data=student_by_cohort, aes(x=cohort, y=average_score, fill =cohort)) +
+  theme_minimal() +
+  geom_bar(stat="identity", position = position_dodge()) +
+  geom_errorbar(aes(ymin=average_score-std, ymax=average_score+std), width=.2,
+               position=position_dodge(.9))+
+# geom_text(aes(label=average_score), vjust=1.6, color="white", size=3.5) +
+  theme(plot.title = element_text(hjust = 0.5),
+        text=element_text(face = "bold", size=14),
+        axis.text.y = element_text( hjust = 2)) +
+  scale_fill_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
+  ggtitle("Average Student Survey Score by Cohort") +
+  labs(y="Average Score", x = "", fill = "Cohort") 
+  
+p
+```
+
+
+```{r network_analysis}
+
+library(readxl)
+library(igraph)
+library(mltools)
+library(dummies)
+
+na_raw <- read_excel("data/Centex Non-Profit Effectiveness 2020.xlsx")
+na_raw$`MSDF Grantee`[is.na(na_raw$`MSDF Grantee`)] <- "N"
+na_raw$Organization <- as.factor(na_raw$Organization)
+na_raw <- as.data.frame(na_raw)
+
+#Hot coding the organization variable and creating a 
+na_bipartite <- dummy.data.frame(na_raw, names=c('Organization'), sep="_")
+na_bipartite <- select(na_bipartite, -c("Initiative", "Service Area","MSDF Grantee" ))
+
+#Remove duplicate rows 
+na_bipartite = unique(na_bipartite)
+
+#Melt the rows of the same entity 
+library(reshape2)
+library(data.table)
+test <- as.data.table(na_bipartite)[, sum("Organization_Better Together Fund" ,"Organization_Learn All the Time" ,"Organization_Mission Capital"    ,
+                                          "Organization_Mission Squared", "Organization_RGK CONNECT Program","Organization_Strategic Collaboration"),
+                                    by = .(ORGANIZATION)]
+
+
+
+
+```
 
