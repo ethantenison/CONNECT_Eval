@@ -1243,6 +1243,8 @@ library(readxl)
 library(igraph)
 library(mltools)
 library(dummies)
+library(dplyr)
+set.seed(27)
 
 na_raw <- read_excel("data/Centex Non-Profit Effectiveness 2020.xlsx")
 na_raw$`MSDF Grantee`[is.na(na_raw$`MSDF Grantee`)] <- "N"
@@ -1256,14 +1258,68 @@ na_bipartite <- select(na_bipartite, -c("Initiative", "Service Area","MSDF Grant
 #Remove duplicate rows 
 na_bipartite = unique(na_bipartite)
 
-#Melt the rows of the same entity 
-library(reshape2)
-library(data.table)
-test <- as.data.table(na_bipartite)[, sum("Organization_Better Together Fund" ,"Organization_Learn All the Time" ,"Organization_Mission Capital"    ,
-                                          "Organization_Mission Squared", "Organization_RGK CONNECT Program","Organization_Strategic Collaboration"),
-                                    by = .(ORGANIZATION)]
+#Organization that participate in multiple programs have their rows added together. 
+library(plyr)
+test = ddply(na_bipartite, "ORGANIZATION", numcolwise(sum))
+test2 <- as.matrix(test)
+rownames(test2) = test2[,1]
+test2 = test2[,-1]
+colnames(test2) = c("Better Together Fund","Learn All the Time", "Mission Capital", "Mission Squared", "RGK CONNECT Program", "Strategic Collaboration")
+
+#Create igraph object from adjacency matrix 
+g <-  graph_from_incidence_matrix(test2, weighted = T)
+g
 
 
+#plot 
+
+#In this graph the size of the vertex has been altered base on the number of connections a node has. 
+plot(g, edge.color="slateblue",edge.width=E(g)$weight, layout=layout_nicely, vertex.label = ifelse(degree(g) > 4, V(g)$name, NA),vertex.size=sqrt(igraph::degree(g)*2), vertex.label.color="black",vertex.label.font=2, vertex.label.degree=1.5,vertex.label.cex=1.3, asp =-5, vertex.color="gold") #vertex.frame.color = "gold"
+title("NPO Network", cex.main=3)
+
+#Bipartite 
+plot(g, edge.color="slateblue",edge.width=E(g)$weight, layout=layout.bipartite, vertex.label=NA, vertex.size=6, asp =-5, main = "NPO Bipartite Graph", vertex.color="gold")
+
+#Full Ring
+plot(g, edge.color="slateblue",edge.width=E(g)$weight, layout=layout_in_circle, vertex.label=NA, vertex.size=6, asp =-5, main = "NPO Ring Graph", vertex.color="gold")
+
+#bipartite package
+library(bipartite)
+
+par(xpd=T)
+plotweb(g)
+visweb(g)
+
+```
+
+```{r all_network_layouts}
+layouts <- grep("^layout_", ls("package:igraph"), value=TRUE)[-1]
+# Remove layouts that do not apply to our graph.
+layouts <- layouts[!grepl("bipartite|merge|norm|sugiyama|tree", layouts)]
+par(mfrow=c(3,3), mar=c(1,1,1,1))
+for (layout in layouts) {
+print(layout)
+l <- do.call(layout, list(g))
+plot(g, vertex.color="gold",edge.color="slateblue",edge.width=E(g)$weight,vertex.label=NA, vertex.size=6, asp =-5,layout=l, main=layout) }
+
+
+
+
+
+```
+
+# Assembling a dataset of node-level measures
+
+```{r node_centrality}
+names=V(g)$name
+de=degree(g)
+st=graph.strength(g)
+be=betweenness(g, normalized=T)
+
+
+#assemble dataset
+d=data.frame(node.name=names, degree=de, strength=st, betweenness=be) 
+head(d) #display first 6 lines of data
 
 
 ```
