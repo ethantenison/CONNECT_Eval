@@ -7,7 +7,7 @@ output:
 ---
 
 ```{r libraries, message=FALSE, echo=FALSE, warning = FALSE}
-#load libraries
+# load libraries
 library(haven)
 library(dplyr)
 library(janitor)
@@ -15,7 +15,7 @@ library(stringr)
 library(readr)
 library(ggplot2)
 library(tidyr)
-library(webshot) #for taking an html widget and saving it as pdf or png 
+library(webshot) # for taking an html widget and saving it as pdf or png
 library(htmlwidgets)
 
 # https://utexas.qualtrics.com/jfe/form/SV_3rZqPyr1lzb6prn organ eval survey
@@ -23,7 +23,7 @@ library(htmlwidgets)
 
 ## Student Evaluation Histograms 
 ```{r student_survey, message =FALSE, echo=FALSE, warning = FALSE}
-#Reading Student Surveys, adding cohort column, and bind rows 
+# Reading Student Surveys, adding cohort column, and bind rows
 student_survey_spring_2019 <- read_csv("data/Student survey_Spring 2019.csv")
 student_survey_spring_2019 <- mutate(student_survey_spring_2019, cohort = "Spring 2019")
 student_survey_summer_2019 <- read_csv("data/Student survey_Summer 2019.csv")
@@ -33,149 +33,145 @@ student_survey_fall_2019 <- mutate(student_survey_fall_2019, cohort = "Fall 2019
 student_survey_spring_2020 <- read_csv("data/Student survey_Spring 2020.csv")
 student_survey_spring_2020 <- mutate(student_survey_spring_2019, cohort = "Spring 2020")
 
-student_surveys <- bind_rows(student_survey_spring_2019,student_survey_summer_2019, student_survey_fall_2019, student_survey_spring_2020)
+student_surveys <- bind_rows(student_survey_spring_2019, student_survey_summer_2019, student_survey_fall_2019, student_survey_spring_2020)
 
 pre_standarize <- student_surveys
 
 
-# These questions need to be removed from the histograms because there are too many answers 
+# These questions need to be removed from the histograms because there are too many answers
 student_surveys <- select(student_surveys, -c(
-                                               "What aspect(s) of the program/course were most helpful to you in achieving your learning goals?",
-                                               "What suggestions for improvement do you have for future iterations of this program or course?",
-                                               "What resources did you find most helpful for your learning and/or completing your client project? - Other - Text","What resources did you find most helpful for your learning and/or completing your client project? - Selected Choice",
-                                                "If you selected \"Maybe\" or \"No\" to the previous question, please explain.",
-                                                "Is there anything else you would like to share about your experience in this program or course? (Optional)"))
+  "What aspect(s) of the program/course were most helpful to you in achieving your learning goals?",
+  "What suggestions for improvement do you have for future iterations of this program or course?",
+  "What resources did you find most helpful for your learning and/or completing your client project? - Other - Text", "What resources did you find most helpful for your learning and/or completing your client project? - Selected Choice",
+  "If you selected \"Maybe\" or \"No\" to the previous question, please explain.",
+  "Is there anything else you would like to share about your experience in this program or course? (Optional)"
+))
 
-#Standarizing variable names
+# Standarizing variable names
 student_surveys <- clean_names(student_surveys)
 
 
 
 
-#Adding skip a line to titles
+# Adding skip a line to titles
 student_survey_title <- list(
-         "In which program(s) are you a participant?"                                                                                                                          
-         , "How much do you believe that you improved in \nworking with clients in an independent capacity?"                                                                       
-         , "How much do you believe that you improved in \ngiving a client real-time feedback?"                                                                                    
-         , "How much do you believe that you improved in planning \nand facilitating meetings with clients?"                                                                       
-         , "How much do you believe that you improved in \nleading and managing a project from start to finish \nwith little guidance from your client?"                             
-         , "How much do you believe that you improved in \ndesigning clear and compelling solutions when provided \nwith ambiguous information and support?"                         
-         , "How much do you believe that you improved in \nsynthesizing and presenting (written and verbal) complex \ninformation to clients in an accessible and actionable manner?"
-         , "How useful do you believe your project and final deliverable \nwas to your client organization?"                                                                       
-        , "How clear were expectations from your client about your \nproject scope and deliverables?"                                                                             
-        , "How would you rate the time commitment and work load required \nof you by your client organization?"                                                                   
-        , "Would you recommend working with this client again in \nfuture years of this program or course?"                                                                       
-        , "To what extent did your experience meet your expectations \nfor the program and/or course?"                                                                            
-        , "How supported did you feel by the program \ncoordinator(s) and/or instructor in addressing challenges \nor roadblocks in your client project?"                           
-        , "Are you willing to share your experience in the \nprogram and/or course for marketing or student \nrecruitment purposes in the future?"                                  
-        , "cohort"      
+  "In which program(s) are you a participant?",
+  "How much do you believe that you improved in \nworking with clients in an independent capacity?",
+  "How much do you believe that you improved in \ngiving a client real-time feedback?",
+  "How much do you believe that you improved in planning \nand facilitating meetings with clients?",
+  "How much do you believe that you improved in \nleading and managing a project from start to finish \nwith little guidance from your client?",
+  "How much do you believe that you improved in \ndesigning clear and compelling solutions when provided \nwith ambiguous information and support?",
+  "How much do you believe that you improved in \nsynthesizing and presenting (written and verbal) complex \ninformation to clients in an accessible and actionable manner?",
+  "How useful do you believe your project and final deliverable \nwas to your client organization?",
+  "How clear were expectations from your client about your \nproject scope and deliverables?",
+  "How would you rate the time commitment and work load required \nof you by your client organization?",
+  "Would you recommend working with this client again in \nfuture years of this program or course?",
+  "To what extent did your experience meet your expectations \nfor the program and/or course?",
+  "How supported did you feel by the program \ncoordinator(s) and/or instructor in addressing challenges \nor roadblocks in your client project?",
+  "Are you willing to share your experience in the \nprogram and/or course for marketing or student \nrecruitment purposes in the future?",
+  "cohort"
 )
-  
-#Created ordered factors 
+
+# Created ordered factors
 student_surveys$`how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity` <- factor(
-    student_surveys$`how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity`,
-    levels =
-        c("None at all", "A little", "A moderate amount", "A lot", "A great deal"),
-    exclude = NULL,
-    ordered = TRUE
+  student_surveys$`how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity`,
+  levels =
+    c("None at all", "A little", "A moderate amount", "A lot", "A great deal"),
+  exclude = NULL,
+  ordered = TRUE
 )
 
 student_surveys$`how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback` <- factor(
-    student_surveys$`how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback`,
-    levels =
-        c("None at all", "A little", "A moderate amount", "A lot", "A great deal"),
-    exclude = NULL,
-    ordered = TRUE
+  student_surveys$`how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback`,
+  levels =
+    c("None at all", "A little", "A moderate amount", "A lot", "A great deal"),
+  exclude = NULL,
+  ordered = TRUE
 )
 
 student_surveys$`how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients` <- factor(
-    student_surveys$`how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients`,
-    levels =
-        c("None at all", "A little", "A moderate amount", "A lot", "A great deal"),
-    exclude = NULL,
-    ordered = TRUE
+  student_surveys$`how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients`,
+  levels =
+    c("None at all", "A little", "A moderate amount", "A lot", "A great deal"),
+  exclude = NULL,
+  ordered = TRUE
 )
 
 student_surveys$`how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client` <- factor(
-    student_surveys$`how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client`,
-    levels =
-        c("None at all", "A little", "A moderate amount", "A lot", "A great deal"),
-    exclude = NULL,
-    ordered = TRUE
+  student_surveys$`how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client`,
+  levels =
+    c("None at all", "A little", "A moderate amount", "A lot", "A great deal"),
+  exclude = NULL,
+  ordered = TRUE
 )
 
 student_surveys$`how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support` <- factor(
-    student_surveys$`how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support`,
-    levels =
-        c("None at all", "A little", "A moderate amount", "A lot", "A great deal"),
-    exclude = NULL,
-    ordered = TRUE
+  student_surveys$`how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support`,
+  levels =
+    c("None at all", "A little", "A moderate amount", "A lot", "A great deal"),
+  exclude = NULL,
+  ordered = TRUE
 )
 
 student_surveys$`how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner` <- factor(
-    student_surveys$`how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner`,
-    levels =
-        c("None at all", "A little", "A moderate amount", "A lot", "A great deal"),
-    exclude = NULL,
-    ordered = TRUE
+  student_surveys$`how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner`,
+  levels =
+    c("None at all", "A little", "A moderate amount", "A lot", "A great deal"),
+  exclude = NULL,
+  ordered = TRUE
 )
 student_surveys$`how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization` <- factor(
-    student_surveys$`how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization`,
-    levels =
-        c("Not at all useful", "Slightly useful", "Moderately useful", "Very useful", "Extremely useful"),
-    exclude = NULL,
-    ordered = TRUE
+  student_surveys$`how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization`,
+  levels =
+    c("Not at all useful", "Slightly useful", "Moderately useful", "Very useful", "Extremely useful"),
+  exclude = NULL,
+  ordered = TRUE
 )
 
 student_surveys$`how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables` <- factor(
-    student_surveys$`how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables`,
-    levels =
-        c("Extremely unclear", "Somewhat unclear", "Neither clear nor unclear", "Somewhat clear", "Extremely clear"),
-    exclude = NULL,
-    ordered = TRUE
+  student_surveys$`how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables`,
+  levels =
+    c("Extremely unclear", "Somewhat unclear", "Neither clear nor unclear", "Somewhat clear", "Extremely clear"),
+  exclude = NULL,
+  ordered = TRUE
 )
 
 student_surveys$`how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization` <- factor(
-    student_surveys$`how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization`,
-    levels =
-        c("Far too little", "Slightly too little", "About right", "Slightly too much", "Far too much"),
-    exclude = NULL,
-    ordered = TRUE
+  student_surveys$`how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization`,
+  levels =
+    c("Far too little", "Slightly too little", "About right", "Slightly too much", "Far too much"),
+  exclude = NULL,
+  ordered = TRUE
 )
 
 student_surveys$`to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course` <- factor(
-    student_surveys$`to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course`,
-    levels =
-        c("Far short of expectation", "Short of expectations", "Equals expectations", "Exceeds expectations", "Far exceeds expectations" ),
-    exclude = NULL,
-    ordered = TRUE
+  student_surveys$`to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course`,
+  levels =
+    c("Far short of expectation", "Short of expectations", "Equals expectations", "Exceeds expectations", "Far exceeds expectations"),
+  exclude = NULL,
+  ordered = TRUE
 )
 
 student_surveys$`how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project` <- factor(
-    student_surveys$`how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project`,
-    levels =
-        c("Not at all", "A little", "A moderate amount", "A lot", "A great deal" ),
-    exclude = NULL,
-    ordered = TRUE
+  student_surveys$`how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project`,
+  levels =
+    c("Not at all", "A little", "A moderate amount", "A lot", "A great deal"),
+  exclude = NULL,
+  ordered = TRUE
 )
-#GGPLOTS
+# GGPLOTS
 
-for(i in 1:ncol(student_surveys)){
-  
-
-print(
-  ggplot(student_surveys, aes(x=student_surveys[[i]])) +
-  geom_histogram(stat = "count", fill = "lightblue") +
-  theme(
-    plot.title = element_text(size = 12, face = "bold",hjust = 0.5),
-    axis.title.x = element_blank()
-  ) +
-  ggtitle(student_survey_title[i])
+for (i in 1:ncol(student_surveys)) {
+  print(
+    ggplot(student_surveys, aes(x = student_surveys[[i]])) +
+      geom_histogram(stat = "count", fill = "lightblue") +
+      theme(
+        plot.title = element_text(size = 12, face = "bold", hjust = 0.5),
+        axis.title.x = element_blank()
+      ) +
+      ggtitle(student_survey_title[i])
   )
-  
-  
 }
-  
 ```
 
 
@@ -185,16 +181,16 @@ print(
 
 library(wordcloud)
 library(RColorBrewer)
-library(tm) #to create corpus 
+library(tm) # to create corpus
 library(wordcloud2)
 
-#Create a vector containing only the text
+# Create a vector containing only the text
 text <- pre_standarize$`What aspect(s) of the program/course were most helpful to you in achieving your learning goals?`
 
-# Create a corpus  
+# Create a corpus
 docs <- Corpus(VectorSource(text))
 
-#standardize corpus
+# standardize corpus
 docs <- docs %>%
   tm_map(removeNumbers) %>%
   tm_map(removePunctuation) %>%
@@ -202,14 +198,14 @@ docs <- docs %>%
 docs <- tm_map(docs, content_transformer(tolower))
 docs <- tm_map(docs, removeWords, stopwords("english"))
 
-#create a document matrix 
-dtm <- TermDocumentMatrix(docs) 
-matrix <- as.matrix(dtm) 
-words <- sort(rowSums(matrix),decreasing=TRUE) 
-df <- data.frame(word = names(words),freq=words)
+# create a document matrix
+dtm <- TermDocumentMatrix(docs)
+matrix <- as.matrix(dtm)
+words <- sort(rowSums(matrix), decreasing = TRUE)
+df <- data.frame(word = names(words), freq = words)
 df$word <- as.character(df$word)
 target <- c("also", "project", "really", "helpful", "able", "helped", "felt", "wasnt", "etc", "asks", "move", "gave")
-'%ni%' <- Negate('%in%')
+"%ni%" <- Negate("%in%")
 df <- filter(df, word %ni% target)
 df$word <- as.factor(df$word)
 
@@ -217,19 +213,19 @@ df$word <- as.factor(df$word)
 
 set.seed(27)
 
-#wordcloud(words = df$word, freq = df$freq, min.freq = 1,max.words=200, random.order=FALSE, rot.per=0.35, colors=brewer.pal(8, "Dark2"))
+# wordcloud(words = df$word, freq = df$freq, min.freq = 1,max.words=200, random.order=FALSE, rot.per=0.35, colors=brewer.pal(8, "Dark2"))
 
-w1 <- wordcloud2(data=df,color='random-dark', shuffle = FALSE)
+w1 <- wordcloud2(data = df, color = "random-dark", shuffle = FALSE)
 
-saveWidget(w1, '1.html', selfcontained = F)
-webshot('1.html', '1.png', vwidth=700,vheight=500, delay = 5)
+saveWidget(w1, "1.html", selfcontained = F)
+webshot("1.html", "1.png", vwidth = 700, vheight = 500, delay = 5)
 ```
 
 
 ## Organization Evaluation Histograms
 
 ```{r organization_survey, echo=FALSE, message =FALSE, warning = FALSE}
-#Reading Organization Surveys
+# Reading Organization Surveys
 organization_survey_spring_2019 <- read_csv("data/Organization Survey_Spring 2019.csv")
 organization_survey_spring_2019 <- mutate(organization_survey_spring_2019, cohort = "Spring 2019")
 organization_survey_summer_2019 <- read_csv("data/Organization Survey_Summer 2019.csv")
@@ -238,118 +234,114 @@ organization_survey_fall_2019 <- read_csv("data/Organization Survey_Fall 2019.cs
 organization_survey_fall_2019 <- mutate(organization_survey_fall_2019, cohort = "Fall 2019")
 organization_survey_spring_2020 <- read_csv("data/Organization Survey_Spring 2020.csv")
 organization_survey_spring_2020 <- mutate(organization_survey_spring_2019, cohort = "Spring 2020")
-organization_surveys <- bind_rows(organization_survey_spring_2019,organization_survey_summer_2019, organization_survey_fall_2019, organization_survey_spring_2020)
+organization_surveys <- bind_rows(organization_survey_spring_2019, organization_survey_summer_2019, organization_survey_fall_2019, organization_survey_spring_2020)
 
 prestandardize <- organization_surveys
 
 
-# These questions need to be removed from the histograms because there are too many answers 
+# These questions need to be removed from the histograms because there are too many answers
 organization_surveys <- select(organization_surveys, -c(
-                                                        "Please describe how you intend to use or build upon the work done by your consultant(s) (if at all).",
-                                                        "What did you and/or your organization learn from your participation in this program/course?",
-                                                        "What suggestions for improvement do you have for future iterations of this program or course?",
-                                                        "What is one piece of advice that you would like to give to your consultant(s) to be more effective and impactful in the future?",
-                                                        "Is there anything else that you would like to share about your experience? (Optional)",
-                                                        "If you answered \"Maybe\" or \"No\" to the previous question, please explain."))
+  "Please describe how you intend to use or build upon the work done by your consultant(s) (if at all).",
+  "What did you and/or your organization learn from your participation in this program/course?",
+  "What suggestions for improvement do you have for future iterations of this program or course?",
+  "What is one piece of advice that you would like to give to your consultant(s) to be more effective and impactful in the future?",
+  "Is there anything else that you would like to share about your experience? (Optional)",
+  "If you answered \"Maybe\" or \"No\" to the previous question, please explain."
+))
 
-# Survey Titles 
+# Survey Titles
 organization_survey_titles <- list(
-            "In which program did you participate?"                                                                                                                                  
-            ,"To what extent did your experience meet your \nexpectations for the program and/or course?"                                                                               
-            , "How useful was this experience for you or your organization?"                                                                                                           
-            , "How satisfied are you with the relationship with your consultant(s)?"                                                                                                   
-            , "How would you rate the time commitment and \nresources required of you during this program/course?"                                                                       
-            , "Would you be open to participating in this \nprogram/course again in the future?"                                                                                         
-            , "How effective was your consultant(s) in \nleading the project from start to finish?"                                                                                      
-            , "How effective was your consultant(s) in \ncommunicating with you and/or your organization?"                                                                               
-            , "How effective was your consultant(s) in \nrecommending clear and compelling solutions for your organization?"                                                             
-            , "How effective was your consultant(s) \nin synthesizing and presenting information in an actionable \nand accessible manner to you and/or your organization?"                
-            , "Are you willing for the program or the RGK Center \nto share highlights of your organization's project in \nmarketing, evaluation, and recruitment materials in the future?"
-            ,  "cohort"
-
+  "In which program did you participate?",
+  "To what extent did your experience meet your \nexpectations for the program and/or course?",
+  "How useful was this experience for you or your organization?",
+  "How satisfied are you with the relationship with your consultant(s)?",
+  "How would you rate the time commitment and \nresources required of you during this program/course?",
+  "Would you be open to participating in this \nprogram/course again in the future?",
+  "How effective was your consultant(s) in \nleading the project from start to finish?",
+  "How effective was your consultant(s) in \ncommunicating with you and/or your organization?",
+  "How effective was your consultant(s) in \nrecommending clear and compelling solutions for your organization?",
+  "How effective was your consultant(s) \nin synthesizing and presenting information in an actionable \nand accessible manner to you and/or your organization?",
+  "Are you willing for the program or the RGK Center \nto share highlights of your organization's project in \nmarketing, evaluation, and recruitment materials in the future?",
+  "cohort"
 )
 
-#Standarizing variable names
+# Standarizing variable names
 organization_surveys <- clean_names(organization_surveys)
 
-#Created ordered factors 
+# Created ordered factors
 organization_surveys$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course <- factor(
-    organization_surveys$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course,
-    levels =
-        c("Equals expectations", "Exceeds expectations", "Far exceeds expectations"),
-    exclude = NULL,
-    ordered = TRUE
+  organization_surveys$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course,
+  levels =
+    c("Equals expectations", "Exceeds expectations", "Far exceeds expectations"),
+  exclude = NULL,
+  ordered = TRUE
 )
 
 organization_surveys$how_useful_was_this_experience_for_you_or_your_organization <- factor(
-    organization_surveys$how_useful_was_this_experience_for_you_or_your_organization,
-    levels =
-        c("Slightly useful", "Moderately useful", "Very useful", "Extremely useful"),
-    exclude = NULL,
-    ordered = TRUE
+  organization_surveys$how_useful_was_this_experience_for_you_or_your_organization,
+  levels =
+    c("Slightly useful", "Moderately useful", "Very useful", "Extremely useful"),
+  exclude = NULL,
+  ordered = TRUE
 )
 
 organization_surveys$how_satisfied_are_you_with_the_relationship_with_your_consultant_s <- factor(
-    organization_surveys$how_satisfied_are_you_with_the_relationship_with_your_consultant_s,
-    levels =
-        c("Slightly satisfied", "Moderately satisfied", "Very satisfied", "Extremely satisfied"),
-    exclude = NULL,
-    ordered = TRUE
+  organization_surveys$how_satisfied_are_you_with_the_relationship_with_your_consultant_s,
+  levels =
+    c("Slightly satisfied", "Moderately satisfied", "Very satisfied", "Extremely satisfied"),
+  exclude = NULL,
+  ordered = TRUE
 )
 
 organization_surveys$how_would_you_rate_the_time_commitment_and_resources_required_of_you_during_this_program_course <- factor(
-    organization_surveys$how_would_you_rate_the_time_commitment_and_resources_required_of_you_during_this_program_course,
-    levels =
-        c("Slightly too little", "About right", "Slightly too much"),
-    exclude = NULL,
-    ordered = TRUE
+  organization_surveys$how_would_you_rate_the_time_commitment_and_resources_required_of_you_during_this_program_course,
+  levels =
+    c("Slightly too little", "About right", "Slightly too much"),
+  exclude = NULL,
+  ordered = TRUE
 )
 organization_surveys$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish <- factor(
-    organization_surveys$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish,
-    levels =
-        c("Not effective at all", "Slightly effective",  "Moderately effective", "Very effective", "Extremely effective"),
-    exclude = NULL,
-    ordered = TRUE
+  organization_surveys$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish,
+  levels =
+    c("Not effective at all", "Slightly effective", "Moderately effective", "Very effective", "Extremely effective"),
+  exclude = NULL,
+  ordered = TRUE
 )
 organization_surveys$how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization <- factor(
-    organization_surveys$how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization,
-    levels =
-        c("Not effective at all", "Slightly effective",  "Moderately effective", "Very effective", "Extremely effective"),
-    exclude = NULL,
-    ordered = TRUE
+  organization_surveys$how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization,
+  levels =
+    c("Not effective at all", "Slightly effective", "Moderately effective", "Very effective", "Extremely effective"),
+  exclude = NULL,
+  ordered = TRUE
 )
 organization_surveys$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization <- factor(
-    organization_surveys$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization,
-    levels =
-        c("Not effective at all", "Slightly effective",  "Moderately effective", "Very effective", "Extremely effective"),
-    exclude = NULL,
-    ordered = TRUE
+  organization_surveys$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization,
+  levels =
+    c("Not effective at all", "Slightly effective", "Moderately effective", "Very effective", "Extremely effective"),
+  exclude = NULL,
+  ordered = TRUE
 )
 organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization <- factor(
-    organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization,
-    levels =
-        c("Not effective at all", "Slightly effective",  "Moderately effective", "Very effective", "Extremely effective"),
-    exclude = NULL,
-    ordered = TRUE
+  organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization,
+  levels =
+    c("Not effective at all", "Slightly effective", "Moderately effective", "Very effective", "Extremely effective"),
+  exclude = NULL,
+  ordered = TRUE
 )
 
 
 
-#GGPLOTS
-for(i in 1:ncol(organization_surveys)){
-  
-
-print(
-  ggplot(organization_surveys, aes(x=organization_surveys[[i]])) +
-        geom_histogram(stat = "count", fill = "lightblue") +
-        theme(
-          plot.title = element_text(size = 12, face = "bold",hjust = 0.5),
-          axis.title.x = element_blank()
-        ) +
-        ggtitle(organization_survey_titles[i])
-      )
-  
-  
+# GGPLOTS
+for (i in 1:ncol(organization_surveys)) {
+  print(
+    ggplot(organization_surveys, aes(x = organization_surveys[[i]])) +
+      geom_histogram(stat = "count", fill = "lightblue") +
+      theme(
+        plot.title = element_text(size = 12, face = "bold", hjust = 0.5),
+        axis.title.x = element_blank()
+      ) +
+      ggtitle(organization_survey_titles[i])
+  )
 }
 ```
 
@@ -358,13 +350,13 @@ print(
 
 ```{r org_word_Cloud2, echo=FALSE, message =FALSE, warning = FALSE}
 library(widgetframe)
-#Create a vector containing only the text
+# Create a vector containing only the text
 text <- prestandardize$`Please describe how you intend to use or build upon the work done by your consultant(s) (if at all).`
 
-# Create a corpus  
+# Create a corpus
 docs <- Corpus(VectorSource(text))
 
-#standardize corpus
+# standardize corpus
 docs <- docs %>%
   tm_map(removeNumbers) %>%
   tm_map(removePunctuation) %>%
@@ -372,14 +364,14 @@ docs <- docs %>%
 docs <- tm_map(docs, content_transformer(tolower))
 docs <- tm_map(docs, removeWords, stopwords("english"))
 
-#create a document matrix 
-dtm <- TermDocumentMatrix(docs) 
-matrix <- as.matrix(dtm) 
-words <- sort(rowSums(matrix),decreasing=TRUE) 
-df <- data.frame(word = names(words),freq=words)
+# create a document matrix
+dtm <- TermDocumentMatrix(docs)
+matrix <- as.matrix(dtm)
+words <- sort(rowSums(matrix), decreasing = TRUE)
+df <- data.frame(word = names(words), freq = words)
 df$word <- as.character(df$word)
-target <- c("also", "project", "really", "will","work","use","program")
-'%ni%' <- Negate('%in%')
+target <- c("also", "project", "really", "will", "work", "use", "program")
+"%ni%" <- Negate("%in%")
 df <- filter(df, word %ni% target)
 df$word <- as.factor(df$word)
 
@@ -387,12 +379,11 @@ df$word <- as.factor(df$word)
 
 set.seed(27)
 
-#wordcloud(words = df$word, freq = df$freq, min.freq = 1,max.words=200, random.order=FALSE, rot.per=0.1, colors=brewer.pal(8, "Dark2"))
+# wordcloud(words = df$word, freq = df$freq, min.freq = 1,max.words=200, random.order=FALSE, rot.per=0.1, colors=brewer.pal(8, "Dark2"))
 
-w2 <- wordcloud2(data=df, color='random-dark', shuffle = FALSE)
-saveWidget(w2, '2.html', selfcontained = F)
-webshot('2.html', '2.png', vwidth=700,vheight=500, delay = 5)
-
+w2 <- wordcloud2(data = df, color = "random-dark", shuffle = FALSE)
+saveWidget(w2, "2.html", selfcontained = F)
+webshot("2.html", "2.png", vwidth = 700, vheight = 500, delay = 5)
 ```
 
 
@@ -400,13 +391,13 @@ webshot('2.html', '2.png', vwidth=700,vheight=500, delay = 5)
 
 ```{r org_word_Cloud3, echo=FALSE, message =FALSE, warning = FALSE}
 
-#Create a vector containing only the text
+# Create a vector containing only the text
 text <- prestandardize$`What suggestions for improvement do you have for future iterations of this program or course?`
 
-# Create a corpus  
+# Create a corpus
 docs <- Corpus(VectorSource(text))
 
-#standardize corpus
+# standardize corpus
 docs <- docs %>%
   tm_map(removeNumbers) %>%
   tm_map(removePunctuation) %>%
@@ -414,14 +405,14 @@ docs <- docs %>%
 docs <- tm_map(docs, content_transformer(tolower))
 docs <- tm_map(docs, removeWords, stopwords("english"))
 
-#create a document matrix 
-dtm <- TermDocumentMatrix(docs) 
-matrix <- as.matrix(dtm) 
-words <- sort(rowSums(matrix),decreasing=TRUE) 
-df <- data.frame(word = names(words),freq=words)
+# create a document matrix
+dtm <- TermDocumentMatrix(docs)
+matrix <- as.matrix(dtm)
+words <- sort(rowSums(matrix), decreasing = TRUE)
+df <- data.frame(word = names(words), freq = words)
 df$word <- as.character(df$word)
-target <- c("also", "project", "really", "will","work", "program")
-'%ni%' <- Negate('%in%')
+target <- c("also", "project", "really", "will", "work", "program")
+"%ni%" <- Negate("%in%")
 df <- filter(df, word %ni% target)
 df$word <- as.factor(df$word)
 
@@ -430,26 +421,24 @@ df$word <- as.factor(df$word)
 set.seed(27)
 
 
-#wordcloud(words = df$word, freq = df$freq, min.freq = 1,max.words=200, random.order=FALSE, rot.per=0.1, colors=brewer.pal(8, "Dark2"))
+# wordcloud(words = df$word, freq = df$freq, min.freq = 1,max.words=200, random.order=FALSE, rot.per=0.1, colors=brewer.pal(8, "Dark2"))
 
-w3 <- wordcloud2(data=df, size=1.6, color='random-dark', shuffle = FALSE)
-saveWidget(w3, '3.html', selfcontained = F)
-webshot('3.html', '3.png', vwidth=700,vheight=500, delay = 5)
-
-
+w3 <- wordcloud2(data = df, size = 1.6, color = "random-dark", shuffle = FALSE)
+saveWidget(w3, "3.html", selfcontained = F)
+webshot("3.html", "3.png", vwidth = 700, vheight = 500, delay = 5)
 ```
 
 ## "Is there anything else that you would like to share about your experience? (Optional)"
 
 ```{r org_word_Cloud4, echo=FALSE, message =FALSE, warning = FALSE}
 
-#Create a vector containing only the text
+# Create a vector containing only the text
 text <- prestandardize$`Is there anything else that you would like to share about your experience? (Optional)`
 
-# Create a corpus  
+# Create a corpus
 docs <- Corpus(VectorSource(text))
 
-#standardize corpus
+# standardize corpus
 docs <- docs %>%
   tm_map(removeNumbers) %>%
   tm_map(removePunctuation) %>%
@@ -457,14 +446,14 @@ docs <- docs %>%
 docs <- tm_map(docs, content_transformer(tolower))
 docs <- tm_map(docs, removeWords, stopwords("english"))
 
-#create a document matrix 
-dtm <- TermDocumentMatrix(docs) 
-matrix <- as.matrix(dtm) 
-words <- sort(rowSums(matrix),decreasing=TRUE) 
-df <- data.frame(word = names(words),freq=words)
+# create a document matrix
+dtm <- TermDocumentMatrix(docs)
+matrix <- as.matrix(dtm)
+words <- sort(rowSums(matrix), decreasing = TRUE)
+df <- data.frame(word = names(words), freq = words)
 df$word <- as.character(df$word)
-target <- c("also", "project", "really", "will","work","program")
-'%ni%' <- Negate('%in%')
+target <- c("also", "project", "really", "will", "work", "program")
+"%ni%" <- Negate("%in%")
 df <- filter(df, word %ni% target)
 df$word <- as.factor(df$word)
 
@@ -473,12 +462,10 @@ df$word <- as.factor(df$word)
 set.seed(27)
 
 
-#wordcloud(words = df$word, freq = df$freq, min.freq = 1,max.words=200, random.order=FALSE, rot.per=0.1, colors=brewer.pal(8, "Dark2"))
-w4 <- wordcloud2(data=df, size=1.6, color='random-dark', shuffle = FALSE)
-saveWidget(w4, '4.html', selfcontained = F)
-webshot('4.html', '4.png', vwidth=700,vheight=500, delay = 5)
-
-
+# wordcloud(words = df$word, freq = df$freq, min.freq = 1,max.words=200, random.order=FALSE, rot.per=0.1, colors=brewer.pal(8, "Dark2"))
+w4 <- wordcloud2(data = df, size = 1.6, color = "random-dark", shuffle = FALSE)
+saveWidget(w4, "4.html", selfcontained = F)
+webshot("4.html", "4.png", vwidth = 700, vheight = 500, delay = 5)
 ```
 
 ## CONNECT Program Sectors
@@ -486,29 +473,28 @@ webshot('4.html', '4.png', vwidth=700,vheight=500, delay = 5)
 
 ```{r project_breakdown, echo=FALSE, message =FALSE, warning = FALSE, fig.width=15,fig.height=8}
 
-#CONNECT Sectors 
+# CONNECT Sectors
 library(readxl)
 sectors <- read_excel("data/CONNECT _database_ project_info_6.9.2020.xlsx")
 
 
-p <-       ggplot(sectors, aes(x=Sector, fill = Sector)) +
-                  geom_histogram(stat = "count") +
-                  theme_minimal() +
-                  theme(
-                    text=element_text(size=25),
-                    plot.title = element_text(face = "bold",hjust = 0.5, size = 30),
-                    axis.title.x = element_blank(),
-                    axis.title.y = element_text(vjust = 2),
-                    axis.text.x = element_blank(),
-                    axis.text.y = element_text()
-                  ) +
-                  labs(fill = "Nonprofit Sector", y = "Number of Projects") +
-                  ggtitle("CONNECT Project Sectors")
-  
+p <- ggplot(sectors, aes(x = Sector, fill = Sector)) +
+  geom_histogram(stat = "count") +
+  theme_minimal() +
+  theme(
+    text = element_text(size = 25),
+    plot.title = element_text(face = "bold", hjust = 0.5, size = 30),
+    axis.title.x = element_blank(),
+    axis.title.y = element_text(vjust = 2),
+    axis.text.x = element_blank(),
+    axis.text.y = element_text()
+  ) +
+  labs(fill = "Nonprofit Sector", y = "Number of Projects") +
+  ggtitle("CONNECT Project Sectors")
+
 p
 
-ggsave("project_sectors.png", dpi = 500 )
-
+ggsave("project_sectors.png", dpi = 500)
 ```
 
 ## Connect Project Types 
@@ -516,81 +502,84 @@ ggsave("project_sectors.png", dpi = 500 )
 ```{r proj_types,echo=FALSE, message =FALSE, warning = FALSE, fig.width=15,fig.height=8}
 
 
-#Project type
-project_type <- read_excel("data/CONNECT _database_ project_info_6.9.2020.xlsx", 
-    sheet = "Project Type")
+# Project type
+project_type <- read_excel("data/CONNECT _database_ project_info_6.9.2020.xlsx",
+  sheet = "Project Type"
+)
 
-p <-      ggplot(project_type, aes(x=`Project Category (primary)`, fill = `Project Category (primary)`)) +
-                geom_histogram(stat = "count") +
-                theme_minimal() +
-                theme(
-                  text=element_text(size=25),
-                  plot.title = element_text(size = 30, face = "bold",hjust = 0.5),
-                  axis.title.x = element_blank(),
-                  axis.title.y = element_text(vjust = 2),
-                  axis.text.x = element_blank(),
-                  axis.text.y = element_text()
-                ) +
-                ggtitle("CONNECT Project Types")+
-                labs(fill = "Project Categories", y = "Number of Projects") 
-  
+p <- ggplot(project_type, aes(x = `Project Category (primary)`, fill = `Project Category (primary)`)) +
+  geom_histogram(stat = "count") +
+  theme_minimal() +
+  theme(
+    text = element_text(size = 25),
+    plot.title = element_text(size = 30, face = "bold", hjust = 0.5),
+    axis.title.x = element_blank(),
+    axis.title.y = element_text(vjust = 2),
+    axis.text.x = element_blank(),
+    axis.text.y = element_text()
+  ) +
+  ggtitle("CONNECT Project Types") +
+  labs(fill = "Project Categories", y = "Number of Projects")
+
 p
 
-ggsave("project_type.png", dpi = 500 )
+ggsave("project_type.png", dpi = 500)
 ```
 
 # Do nonprofits that pay a percentage of the budget have better reviews? 
 
 ```{r satisfaction,echo=FALSE, message =FALSE, warning = FALSE}
 library(readxl)
-#Dataframe from connect database on whether nonprofits contributed to stipend
-#I went ahead and changed the cohorts columns to say Fall 2019 etc. 
-#I also deleted some rows that were duplicated during a semester o_O 
-org_financial_contribution <- read_excel("data/CONNECT _database_ project_info_6.9.2020.xlsx", 
-    sheet = "Financial", col_types = c("text", 
-        "text", "skip", "numeric", "text", 
-        "skip"))
-for (i in 1:length(org_financial_contribution$`Project Contribution`)){
-                  if(org_financial_contribution$`Project Contribution`[i] == 0){        
-                    org_financial_contribution$contributing[i] <- "no"
-                  }
-                 else{        
-                    org_financial_contribution$contributing[i] <- "yes"
-                 }
+# Dataframe from connect database on whether nonprofits contributed to stipend
+# I went ahead and changed the cohorts columns to say Fall 2019 etc.
+# I also deleted some rows that were duplicated during a semester o_O
+org_financial_contribution <- read_excel("data/CONNECT _database_ project_info_6.9.2020.xlsx",
+  sheet = "Financial", col_types = c(
+    "text",
+    "text", "skip", "numeric", "text",
+    "skip"
+  )
+)
+for (i in 1:length(org_financial_contribution$`Project Contribution`)) {
+  if (org_financial_contribution$`Project Contribution`[i] == 0) {
+    org_financial_contribution$contributing[i] <- "no"
+  }
+  else {
+    org_financial_contribution$contributing[i] <- "yes"
+  }
 }
 
-# I need to manually the set the contributing variable for all the various AISD programs 
+# I need to manually the set the contributing variable for all the various AISD programs
 
 
-#Callin org data again 
-#Reading Organization Surveys
+# Callin org data again
+# Reading Organization Surveys
 organization_survey_spring_2019 <- read_csv("data/Organization Survey_Spring 2019.csv")
 organization_survey_spring_2019 <- mutate(organization_survey_spring_2019, cohort = "Spring 2019")
 organization_survey_summer_2019 <- read_csv("data/Organization Survey_Summer 2019.csv")
 organization_survey_summer_2019 <- mutate(organization_survey_summer_2019, cohort = "Summer 2019")
 organization_survey_fall_2019 <- read_csv("data/Organization Survey_Fall 2019.csv")
 organization_survey_fall_2019 <- mutate(organization_survey_fall_2019, cohort = "Fall 2019")
-organization_surveys <- bind_rows(organization_survey_spring_2019,organization_survey_summer_2019, organization_survey_fall_2019)
+organization_surveys <- bind_rows(organization_survey_spring_2019, organization_survey_summer_2019, organization_survey_fall_2019)
 
 prestandardize <- organization_surveys
 
 organization_surveys <- select(organization_surveys, -c(
-                                                        "Please describe how you intend to use or build upon the work done by your consultant(s) (if at all).",
-                                                        "What did you and/or your organization learn from your participation in this program/course?",
-                                                        "What suggestions for improvement do you have for future iterations of this program or course?",
-                                                        "What is one piece of advice that you would like to give to your consultant(s) to be more effective and impactful in the future?",
-                                                        "Is there anything else that you would like to share about your experience? (Optional)",
-                                                        "If you answered \"Maybe\" or \"No\" to the previous question, please explain."))
+  "Please describe how you intend to use or build upon the work done by your consultant(s) (if at all).",
+  "What did you and/or your organization learn from your participation in this program/course?",
+  "What suggestions for improvement do you have for future iterations of this program or course?",
+  "What is one piece of advice that you would like to give to your consultant(s) to be more effective and impactful in the future?",
+  "Is there anything else that you would like to share about your experience? (Optional)",
+  "If you answered \"Maybe\" or \"No\" to the previous question, please explain."
+))
 
 organization_surveys <- clean_names(organization_surveys)
 organization_surveys$your_organizations_name[organization_surveys$your_organizations_name == "Austin ISD"] <- "Austin Independent School District"
 organization_surveys$your_organizations_name[organization_surveys$your_organizations_name == "Austin ISD--MTSS"] <- "Austin Independent School District"
 
-#Joining org survey data with financial contribution data 
+# Joining org survey data with financial contribution data
 
-org_financial_contribution <- full_join( organization_surveys,org_financial_contribution, by = c("your_organizations_name" = "Organization Name"))
- 
-
+org_financial_contribution <- full_join(organization_surveys, org_financial_contribution, by = c("your_organizations_name" = "Organization Name"))
 ```
 
 
@@ -599,245 +588,247 @@ org_financial_contribution <- full_join( organization_surveys,org_financial_cont
 
 
 ```{r recreating_financial_contribution, echo=FALSE, message =FALSE, warning = FALSE}
-#Reading Organization Surveys
+# Reading Organization Surveys
 organization_survey_spring_2019 <- read_csv("data/Organization Survey_Spring 2019.csv")
 organization_survey_spring_2019 <- mutate(organization_survey_spring_2019, cohort = "Spring 2019")
 organization_survey_summer_2019 <- read_csv("data/Organization Survey_Summer 2019.csv")
 organization_survey_summer_2019 <- mutate(organization_survey_summer_2019, cohort = "Summer 2019")
 organization_survey_fall_2019 <- read_csv("data/Organization Survey_Fall 2019.csv")
 organization_survey_fall_2019 <- mutate(organization_survey_fall_2019, cohort = "Fall 2019")
-organization_surveys <- bind_rows(organization_survey_spring_2019,organization_survey_summer_2019, organization_survey_fall_2019)
+organization_survey_spring_2020 <- read_csv("data/Organization Survey_Spring 2020.csv")
+organization_survey_spring_2020 <- mutate(organization_survey_spring_2020, cohort = "Spring 2020")
+organization_surveys <- bind_rows(organization_survey_spring_2019, organization_survey_summer_2019, organization_survey_fall_2019)
 
 prestandardize <- organization_surveys
 
 organization_surveys <- select(organization_surveys, -c(
-                                                        "Please describe how you intend to use or build upon the work done by your consultant(s) (if at all).",
-                                                        "What did you and/or your organization learn from your participation in this program/course?",
-                                                        "What suggestions for improvement do you have for future iterations of this program or course?",
-                                                        "What is one piece of advice that you would like to give to your consultant(s) to be more effective and impactful in the future?",
-                                                        "Is there anything else that you would like to share about your experience? (Optional)",
-                                                        "If you answered \"Maybe\" or \"No\" to the previous question, please explain."))
+  "Please describe how you intend to use or build upon the work done by your consultant(s) (if at all).",
+  "What did you and/or your organization learn from your participation in this program/course?",
+  "What suggestions for improvement do you have for future iterations of this program or course?",
+  "What is one piece of advice that you would like to give to your consultant(s) to be more effective and impactful in the future?",
+  "Is there anything else that you would like to share about your experience? (Optional)",
+  "If you answered \"Maybe\" or \"No\" to the previous question, please explain."
+))
 
 organization_surveys <- clean_names(organization_surveys)
 
 
-#at this point do organization_surveys$your_organizations_name to see the list of organization names up to fall 2019 that I am going to use to create a list of whether the nonprofit contributed or not. 
+# at this point do organization_surveys$your_organizations_name to see the list of organization names up to fall 2019 that I am going to use to create a list of whether the nonprofit contributed or not.
 
 contributed <- data.frame("contributed" = c(
-                                            "no",
-                                            "yes",
-                                            "no", 
-                                            "no",
-                                            "no",
-                                            "no",
-                                            "no",
-                                            "yes",
-                                            "yes",
-                                            "no",
-                                            "no",
-                                            "no",
-                                            "no",
-                                            "no",
-                                            "yes",
-                                            "no",
-                                            "no",
-                                            "no",
-                                            "yes",
-                                            "no",
-                                            "yes",
-                                            "yes",#upperninety
-                                            "yes",
-                                            "no",
-                                            "no", 
-                                            "yes",
-                                            "no",
-                                            "yes", #foundation communities
-                                            "no",
-                                            "no",
-                                            "yes",#foundation communities
-                                            "no",
-                                            "no",#austin tech alliance
-                                            "yes",
-                                            "no",
-                                            "yes",
-                                            "no",
-                                            "no",
-                                            "no",
-                                            "yes",
-                                            "no" #in fall 2019 open preschool did not but in summer 2019 they did 
-                                            
+  "no",
+  "yes",
+  "no",
+  "no",
+  "no",
+  "no",
+  "no",
+  "yes",
+  "yes",
+  "no",
+  "no",
+  "no",
+  "no",
+  "no",
+  "yes",
+  "no",
+  "no",
+  "no",
+  "yes",
+  "no",
+  "yes",
+  "yes", # upperninety
+  "yes",
+  "no",
+  "no",
+  "yes",
+  "no",
+  "yes", # foundation communities
+  "no",
+  "no",
+  "yes", # foundation communities
+  "no",
+  "no", # austin tech alliance
+  "yes",
+  "no",
+  "yes",
+  "no",
+  "no",
+  "no",
+  "yes",
+  "no" # in fall 2019 open preschool did not but in summer 2019 they did
 ))
 
 organization_surveys <- bind_cols(organization_surveys, contributed)
-#one org somehow did not select an answer for something so I have to fill in the na value
+# one org somehow did not select an answer for something so I have to fill in the na value
 organization_surveys$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish[is.na(organization_surveys$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish)] <- "3"
 organization_surveys$how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization[is.na(organization_surveys$how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization)] <- "3"
 organization_surveys$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization[is.na(organization_surveys$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization)] <- "3"
 organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization[is.na(organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization)] <- "3"
 
 
-#converting survey answers to a likert scale
-for (i in 1:length(organization_surveys$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course)){
-      if(organization_surveys$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] == "Far exceeds expectations"){        
-        organization_surveys$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] <- "5"
-      }
-      else if(organization_surveys$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] == "Exceeds expectations") {        
-        organization_surveys$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] <- "4"
-      }
-      else if(organization_surveys$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] == "Equals expectations") {        
-        organization_surveys$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] <- "3"
-      }
-      else if(organization_surveys$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] == "Short of expectations") {        
-        organization_surveys$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] <- "2"
-      }
-      else if(organization_surveys$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] == "Far short of expectations") {        
-        organization_surveys$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] <- "1"
-      }
+# converting survey answers to a likert scale
+for (i in 1:length(organization_surveys$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course)) {
+  if (organization_surveys$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] == "Far exceeds expectations") {
+    organization_surveys$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] <- "5"
+  }
+  else if (organization_surveys$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] == "Exceeds expectations") {
+    organization_surveys$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] <- "4"
+  }
+  else if (organization_surveys$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] == "Equals expectations") {
+    organization_surveys$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] <- "3"
+  }
+  else if (organization_surveys$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] == "Short of expectations") {
+    organization_surveys$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] <- "2"
+  }
+  else if (organization_surveys$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] == "Far short of expectations") {
+    organization_surveys$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] <- "1"
+  }
 }
 
 organization_surveys$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course <- as.numeric(organization_surveys$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course)
 
-for (i in 1:length(organization_surveys$how_useful_was_this_experience_for_you_or_your_organization)){
-      if(organization_surveys$how_useful_was_this_experience_for_you_or_your_organization[i] == "Extremely useful"){        
-        organization_surveys$how_useful_was_this_experience_for_you_or_your_organization[i] <- "5"
-      }
-      else if(organization_surveys$how_useful_was_this_experience_for_you_or_your_organization[i] == "Very useful") {        
-        organization_surveys$how_useful_was_this_experience_for_you_or_your_organization[i] <- "4"
-      }
-      else if(organization_surveys$how_useful_was_this_experience_for_you_or_your_organization[i] == "Moderately useful") {        
-        organization_surveys$how_useful_was_this_experience_for_you_or_your_organization[i] <- "3"
-      }
-      else if(organization_surveys$how_useful_was_this_experience_for_you_or_your_organization[i] == "Slightly useful") {        
-        organization_surveys$how_useful_was_this_experience_for_you_or_your_organization[i] <- "2"
-      }
-      else if(organization_surveys$how_useful_was_this_experience_for_you_or_your_organization[i] == "Not at all useful") {        
-        organization_surveys$how_useful_was_this_experience_for_you_or_your_organization[i] <- "1"
-      }
+for (i in 1:length(organization_surveys$how_useful_was_this_experience_for_you_or_your_organization)) {
+  if (organization_surveys$how_useful_was_this_experience_for_you_or_your_organization[i] == "Extremely useful") {
+    organization_surveys$how_useful_was_this_experience_for_you_or_your_organization[i] <- "5"
+  }
+  else if (organization_surveys$how_useful_was_this_experience_for_you_or_your_organization[i] == "Very useful") {
+    organization_surveys$how_useful_was_this_experience_for_you_or_your_organization[i] <- "4"
+  }
+  else if (organization_surveys$how_useful_was_this_experience_for_you_or_your_organization[i] == "Moderately useful") {
+    organization_surveys$how_useful_was_this_experience_for_you_or_your_organization[i] <- "3"
+  }
+  else if (organization_surveys$how_useful_was_this_experience_for_you_or_your_organization[i] == "Slightly useful") {
+    organization_surveys$how_useful_was_this_experience_for_you_or_your_organization[i] <- "2"
+  }
+  else if (organization_surveys$how_useful_was_this_experience_for_you_or_your_organization[i] == "Not at all useful") {
+    organization_surveys$how_useful_was_this_experience_for_you_or_your_organization[i] <- "1"
+  }
 }
 
 organization_surveys$how_useful_was_this_experience_for_you_or_your_organization <- as.numeric(organization_surveys$how_useful_was_this_experience_for_you_or_your_organization)
 
-for (i in 1:length(organization_surveys$how_satisfied_are_you_with_the_relationship_with_your_consultant_s)){
-      if(organization_surveys$how_satisfied_are_you_with_the_relationship_with_your_consultant_s[i] == "Extremely satisfied"){        
-        organization_surveys$how_satisfied_are_you_with_the_relationship_with_your_consultant_s[i] <- "5"
-      }
-      else if(organization_surveys$how_satisfied_are_you_with_the_relationship_with_your_consultant_s[i] == "Very satisfied") {        
-        organization_surveys$how_satisfied_are_you_with_the_relationship_with_your_consultant_s[i] <- "4"
-      }
-      else if(organization_surveys$how_satisfied_are_you_with_the_relationship_with_your_consultant_s[i] == "Moderately satisfied") {        
-        organization_surveys$how_satisfied_are_you_with_the_relationship_with_your_consultant_s[i] <- "3"
-      }
-      else if(organization_surveys$how_satisfied_are_you_with_the_relationship_with_your_consultant_s[i] == "Slightly satisfied") {        
-        organization_surveys$how_satisfied_are_you_with_the_relationship_with_your_consultant_s[i] <- "2"
-      }
-      else if(organization_surveys$how_satisfied_are_you_with_the_relationship_with_your_consultant_s[i] == "Not satisfied at all") {        
-        organization_surveys$how_satisfied_are_you_with_the_relationship_with_your_consultant_s[i] <- "1"
-      }
+for (i in 1:length(organization_surveys$how_satisfied_are_you_with_the_relationship_with_your_consultant_s)) {
+  if (organization_surveys$how_satisfied_are_you_with_the_relationship_with_your_consultant_s[i] == "Extremely satisfied") {
+    organization_surveys$how_satisfied_are_you_with_the_relationship_with_your_consultant_s[i] <- "5"
+  }
+  else if (organization_surveys$how_satisfied_are_you_with_the_relationship_with_your_consultant_s[i] == "Very satisfied") {
+    organization_surveys$how_satisfied_are_you_with_the_relationship_with_your_consultant_s[i] <- "4"
+  }
+  else if (organization_surveys$how_satisfied_are_you_with_the_relationship_with_your_consultant_s[i] == "Moderately satisfied") {
+    organization_surveys$how_satisfied_are_you_with_the_relationship_with_your_consultant_s[i] <- "3"
+  }
+  else if (organization_surveys$how_satisfied_are_you_with_the_relationship_with_your_consultant_s[i] == "Slightly satisfied") {
+    organization_surveys$how_satisfied_are_you_with_the_relationship_with_your_consultant_s[i] <- "2"
+  }
+  else if (organization_surveys$how_satisfied_are_you_with_the_relationship_with_your_consultant_s[i] == "Not satisfied at all") {
+    organization_surveys$how_satisfied_are_you_with_the_relationship_with_your_consultant_s[i] <- "1"
+  }
 }
 organization_surveys$how_satisfied_are_you_with_the_relationship_with_your_consultant_s <- as.numeric(organization_surveys$how_satisfied_are_you_with_the_relationship_with_your_consultant_s)
 
-#time commitment is slightly different. It can't be easily converted to a likert scale
-for (i in 1:length(organization_surveys$how_would_you_rate_the_time_commitment_and_resources_required_of_you_during_this_program_course)){
-      if(organization_surveys$how_would_you_rate_the_time_commitment_and_resources_required_of_you_during_this_program_course[i] == "Far too much"){        
-        organization_surveys$how_would_you_rate_the_time_commitment_and_resources_required_of_you_during_this_program_course[i] <- "1"
-      }
-      else if(organization_surveys$how_would_you_rate_the_time_commitment_and_resources_required_of_you_during_this_program_course[i] == "Slightly too much") {        
-        organization_surveys$how_would_you_rate_the_time_commitment_and_resources_required_of_you_during_this_program_course[i] <- "3"
-      }
-      else if(organization_surveys$how_would_you_rate_the_time_commitment_and_resources_required_of_you_during_this_program_course[i] == "About right") {        
-        organization_surveys$how_would_you_rate_the_time_commitment_and_resources_required_of_you_during_this_program_course[i] <- "5"
-      }
-      else if(organization_surveys$how_would_you_rate_the_time_commitment_and_resources_required_of_you_during_this_program_course[i] == "Slightly too little") {        
-        organization_surveys$how_would_you_rate_the_time_commitment_and_resources_required_of_you_during_this_program_course[i] <- "3"
-      }
-      else if(organization_surveys$how_would_you_rate_the_time_commitment_and_resources_required_of_you_during_this_program_course[i] == "Far too little") {        
-        organization_surveys$how_would_you_rate_the_time_commitment_and_resources_required_of_you_during_this_program_course[i] <- "1"
-      }
+# time commitment is slightly different. It can't be easily converted to a likert scale
+for (i in 1:length(organization_surveys$how_would_you_rate_the_time_commitment_and_resources_required_of_you_during_this_program_course)) {
+  if (organization_surveys$how_would_you_rate_the_time_commitment_and_resources_required_of_you_during_this_program_course[i] == "Far too much") {
+    organization_surveys$how_would_you_rate_the_time_commitment_and_resources_required_of_you_during_this_program_course[i] <- "1"
+  }
+  else if (organization_surveys$how_would_you_rate_the_time_commitment_and_resources_required_of_you_during_this_program_course[i] == "Slightly too much") {
+    organization_surveys$how_would_you_rate_the_time_commitment_and_resources_required_of_you_during_this_program_course[i] <- "3"
+  }
+  else if (organization_surveys$how_would_you_rate_the_time_commitment_and_resources_required_of_you_during_this_program_course[i] == "About right") {
+    organization_surveys$how_would_you_rate_the_time_commitment_and_resources_required_of_you_during_this_program_course[i] <- "5"
+  }
+  else if (organization_surveys$how_would_you_rate_the_time_commitment_and_resources_required_of_you_during_this_program_course[i] == "Slightly too little") {
+    organization_surveys$how_would_you_rate_the_time_commitment_and_resources_required_of_you_during_this_program_course[i] <- "3"
+  }
+  else if (organization_surveys$how_would_you_rate_the_time_commitment_and_resources_required_of_you_during_this_program_course[i] == "Far too little") {
+    organization_surveys$how_would_you_rate_the_time_commitment_and_resources_required_of_you_during_this_program_course[i] <- "1"
+  }
 }
 organization_surveys$how_would_you_rate_the_time_commitment_and_resources_required_of_you_during_this_program_course <- as.numeric(organization_surveys$how_would_you_rate_the_time_commitment_and_resources_required_of_you_during_this_program_course)
 
-for (i in 1:length(organization_surveys$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish)){
-      if(organization_surveys$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish[i] == "Extremely effective"){        
-        organization_surveys$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish[i] <- "5"
-      }
-      else if(organization_surveys$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish[i] == "Very effective") {        
-        organization_surveys$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish[i] <- "4"
-      }
-      else if(organization_surveys$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish[i] == "Moderately effective") {        
-        organization_surveys$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish[i] <- "3"
-      }
-      else if(organization_surveys$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish[i] == "Slightly effective") {        
-        organization_surveys$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish[i] <- "2"
-      }
-      else if(organization_surveys$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish[i] == "Not effective at all") {        
-        organization_surveys$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish[i] <- "1"
-      }
+for (i in 1:length(organization_surveys$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish)) {
+  if (organization_surveys$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish[i] == "Extremely effective") {
+    organization_surveys$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish[i] <- "5"
+  }
+  else if (organization_surveys$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish[i] == "Very effective") {
+    organization_surveys$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish[i] <- "4"
+  }
+  else if (organization_surveys$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish[i] == "Moderately effective") {
+    organization_surveys$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish[i] <- "3"
+  }
+  else if (organization_surveys$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish[i] == "Slightly effective") {
+    organization_surveys$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish[i] <- "2"
+  }
+  else if (organization_surveys$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish[i] == "Not effective at all") {
+    organization_surveys$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish[i] <- "1"
+  }
 }
 organization_surveys$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish <- as.numeric(organization_surveys$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish)
 
-for (i in 1:length(organization_surveys$how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization)){
-      if(organization_surveys$how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization[i] == "Extremely effective"){        
-        organization_surveys$how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization[i] <- "5"
-      }
-      else if(organization_surveys$how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization[i] == "Very effective") {        
-        organization_surveys$how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization[i] <- "4"
-      }
-      else if(organization_surveys$how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization[i] == "Moderately effective") {        
-        organization_surveys$how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization[i] <- "3"
-      }
-      else if(organization_surveys$how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization[i] == "Slightly effective") {        
-        organization_surveys$how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization[i] <- "2"
-      }
-      else if(organization_surveys$how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization[i] == "Not effective at all") {        
-        organization_surveys$how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization[i] <- "1"
-      }
+for (i in 1:length(organization_surveys$how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization)) {
+  if (organization_surveys$how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization[i] == "Extremely effective") {
+    organization_surveys$how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization[i] <- "5"
+  }
+  else if (organization_surveys$how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization[i] == "Very effective") {
+    organization_surveys$how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization[i] <- "4"
+  }
+  else if (organization_surveys$how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization[i] == "Moderately effective") {
+    organization_surveys$how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization[i] <- "3"
+  }
+  else if (organization_surveys$how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization[i] == "Slightly effective") {
+    organization_surveys$how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization[i] <- "2"
+  }
+  else if (organization_surveys$how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization[i] == "Not effective at all") {
+    organization_surveys$how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization[i] <- "1"
+  }
 }
 
 organization_surveys$how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization <- as.numeric(organization_surveys$how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization)
 
-for (i in 1:length(organization_surveys$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization)){
-      if(organization_surveys$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization[i] == "Extremely effective"){        
-        organization_surveys$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization[i] <- "5"
-      }
-      else if(organization_surveys$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization[i] == "Very effective") {        
-        organization_surveys$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization[i] <- "4"
-      }
-      else if(organization_surveys$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization[i] == "Moderately effective") {        
-        organization_surveys$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization[i] <- "3"
-      }
-      else if(organization_surveys$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization[i] == "Slightly effective") {        
-        organization_surveys$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization[i] <- "2"
-      }
-      else if(organization_surveys$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization[i] == "Not effective at all") {        
-        organization_surveys$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization[i] <- "1"
-      }
+for (i in 1:length(organization_surveys$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization)) {
+  if (organization_surveys$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization[i] == "Extremely effective") {
+    organization_surveys$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization[i] <- "5"
+  }
+  else if (organization_surveys$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization[i] == "Very effective") {
+    organization_surveys$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization[i] <- "4"
+  }
+  else if (organization_surveys$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization[i] == "Moderately effective") {
+    organization_surveys$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization[i] <- "3"
+  }
+  else if (organization_surveys$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization[i] == "Slightly effective") {
+    organization_surveys$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization[i] <- "2"
+  }
+  else if (organization_surveys$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization[i] == "Not effective at all") {
+    organization_surveys$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization[i] <- "1"
+  }
 }
 
 organization_surveys$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization <- as.numeric(organization_surveys$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization)
 
-for (i in 1:length(organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization)){
-      if(organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization[i] == "Extremely effective"){        
-        organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization[i] <- "5"
-      }
-      else if(organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization[i] == "Very effective") {        
-        organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization[i] <- "4"
-      }
-      else if(organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization[i] == "Moderately effective") {        
-        organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization[i] <- "3"
-      }
-      else if(organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization[i] == "Slightly effective") {        
-        organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization[i] <- "2"
-      }
-      else if(organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization[i] == "Not effective at all") {        
-        organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization[i] <- "1"
-      }
+for (i in 1:length(organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization)) {
+  if (organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization[i] == "Extremely effective") {
+    organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization[i] <- "5"
+  }
+  else if (organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization[i] == "Very effective") {
+    organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization[i] <- "4"
+  }
+  else if (organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization[i] == "Moderately effective") {
+    organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization[i] <- "3"
+  }
+  else if (organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization[i] == "Slightly effective") {
+    organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization[i] <- "2"
+  }
+  else if (organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization[i] == "Not effective at all") {
+    organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization[i] <- "1"
+  }
 }
 organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization <- as.numeric(organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization)
 
-#creating a survey score
+# creating a survey score
 organization_surveys <- mutate(organization_surveys, survey_score = (to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course + how_useful_was_this_experience_for_you_or_your_organization + how_satisfied_are_you_with_the_relationship_with_your_consultant_s + how_would_you_rate_the_time_commitment_and_resources_required_of_you_during_this_program_course + how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish + how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization + how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization + how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization))
 
-#Do orgs that contribute have higher survey ratings? The answer is no. OUt of a total of 40 possible points, those that did not contribute had an average score of 33.9 while those that did not had a score of 34.3, but based on the standard deviation, there is more variablility in the results for those that picked no. 
+# Do orgs that contribute have higher survey ratings? The answer is no. OUt of a total of 40 possible points, those that did not contribute had an average score of 33.9 while those that did not had a score of 34.3, but based on the standard deviation, there is more variablility in the results for those that picked no.
 contributing_yes <- filter(organization_surveys, contributed == "yes")
 print(mean(contributing_yes$survey_score))
 print(sd(contributing_yes$survey_score))
@@ -845,8 +836,6 @@ print(sd(contributing_yes$survey_score))
 contributing_no <- filter(organization_surveys, contributed == "no")
 print(mean(contributing_no$survey_score))
 print(sd(contributing_no$survey_score))
-
-
 ```
 
 # Plot average score by cohort
@@ -854,33 +843,38 @@ print(sd(contributing_no$survey_score))
 
 ```{r org_cohort_avg}
 
-#average score by cohort
-org_by_cohort <- organization_surveys %>% group_by(cohort) %>% summarize(average_score = mean(survey_score), std = sd(survey_score))
+# average score by cohort
+org_by_cohort <- organization_surveys %>%
+  group_by(cohort) %>%
+  summarize(average_score = mean(survey_score), std = sd(survey_score))
 org_by_cohort$cohort <- as.factor(org_by_cohort$cohort)
 
 
 # You need to reorder levels in factor
 library(tidyverse)
-org_by_cohort <- org_by_cohort %>% 
-                              mutate(cohort = fct_relevel(cohort, c("Spring 2019", "Summer 2019", "Fall 2019"))) %>%
-                              arrange(cohort)
+org_by_cohort <- org_by_cohort %>%
+  mutate(cohort = fct_relevel(cohort, c("Spring 2019", "Summer 2019", "Fall 2019"))) %>%
+  arrange(cohort)
 
-# Plot the average scores with error bars 
-p<-ggplot(data=org_by_cohort, aes(x=cohort, y=average_score, fill =cohort)) +
+# Plot the average scores with error bars
+p <- ggplot(data = org_by_cohort, aes(x = cohort, y = average_score, fill = cohort)) +
   theme_minimal() +
-  geom_bar(stat="identity", position = position_dodge()) +
-  geom_errorbar(aes(ymin=average_score-std, ymax=average_score+std), width=.2,
-               position=position_dodge(.9))+
-# geom_text(aes(label=average_score), vjust=1.6, color="white", size=3.5) +
-  theme(plot.title = element_text(hjust = 0.5),
-        text=element_text(face = "bold", size=14),
-        axis.text.y = element_text( hjust = 2)) +
-  scale_fill_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  geom_errorbar(aes(ymin = average_score - std, ymax = average_score + std),
+    width = .2,
+    position = position_dodge(.9)
+  ) +
+  # geom_text(aes(label=average_score), vjust=1.6, color="white", size=3.5) +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    text = element_text(face = "bold", size = 14),
+    axis.text.y = element_text(hjust = 2)
+  ) +
+  scale_fill_manual(values = c("#999999", "#E69F00", "#56B4E9")) +
   ggtitle("Average Org Survey Score by Cohort") +
-  labs(y="Average Score", x = "", fill = "Cohort") 
-  
-p
+  labs(y = "Average Score", x = "", fill = "Cohort")
 
+p
 ```
 
 # Now lets look at each likert scale question
@@ -892,40 +886,46 @@ org_likerts <- organization_surveys[, 3:13]
 org_likerts <- select(org_likerts, -c("are_you_willing_for_the_program_or_the_rgk_center_to_share_highlights_of_your_organizations_project_in_marketing_evaluation_and_recruitment_materials_in_the_future"))
 question_title <- colnames(org_likerts)
 
-org_likerts <- org_likerts %>% group_by(cohort) %>% summarize(average_score = mean(how_satisfied_are_you_with_the_relationship_with_your_consultant_s), std = sd(how_satisfied_are_you_with_the_relationship_with_your_consultant_s))
+org_likerts <- org_likerts %>%
+  group_by(cohort) %>%
+  summarize(average_score = mean(how_satisfied_are_you_with_the_relationship_with_your_consultant_s), std = sd(how_satisfied_are_you_with_the_relationship_with_your_consultant_s))
 
-for(i in 1:9){
-  
-              
-
-              #average score by cohort
-              org_likerts <- org_likerts %>% group_by(cohort) %>% summarize(average_score = mean(org_likerts[[i]]), std = sd(org_likerts[[i]]))
-              org_likerts$cohort <- as.factor(org_likerts$cohort)
-              
-              
-              
-              # You need to reorder levels in factor
-              library(tidyverse)
-              org_likerts <- org_likerts %>% 
-                                            mutate(cohort = fct_relevel(cohort, c("Spring 2019", "Summer 2019", "Fall 2019"))) %>%
-                                            arrange(cohort)
-              
-              # Plot the average scores with error bars 
-              p<-ggplot(data=org_likerts, aes(x=cohort, y=average_score, fill =cohort)) +
-                theme_minimal() +
-                geom_bar(stat="identity", position = position_dodge()) +
-                geom_errorbar(aes(ymin=average_score-std, ymax=average_score+std), width=.2,
-                             position=position_dodge(.9))+
-                theme(plot.title = element_text(hjust = 0.5),
-                      text=element_text(face = "bold", size=10),
-                      axis.text.y = element_text( hjust = 2)) +
-                scale_fill_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
-                ggtitle(question_title[i]) +
-                labs(y="Average Score", x = "", fill = "Cohort") 
-                
-              print(p)
+for (i in 1:9) {
 
 
+
+  # average score by cohort
+  org_likerts <- org_likerts %>%
+    group_by(cohort) %>%
+    summarize(average_score = mean(org_likerts[[i]]), std = sd(org_likerts[[i]]))
+  org_likerts$cohort <- as.factor(org_likerts$cohort)
+
+
+
+  # You need to reorder levels in factor
+  library(tidyverse)
+  org_likerts <- org_likerts %>%
+    mutate(cohort = fct_relevel(cohort, c("Spring 2019", "Summer 2019", "Fall 2019"))) %>%
+    arrange(cohort)
+
+  # Plot the average scores with error bars
+  p <- ggplot(data = org_likerts, aes(x = cohort, y = average_score, fill = cohort)) +
+    theme_minimal() +
+    geom_bar(stat = "identity", position = position_dodge()) +
+    geom_errorbar(aes(ymin = average_score - std, ymax = average_score + std),
+      width = .2,
+      position = position_dodge(.9)
+    ) +
+    theme(
+      plot.title = element_text(hjust = 0.5),
+      text = element_text(face = "bold", size = 10),
+      axis.text.y = element_text(hjust = 2)
+    ) +
+    scale_fill_manual(values = c("#999999", "#E69F00", "#56B4E9")) +
+    ggtitle(question_title[i]) +
+    labs(y = "Average Score", x = "", fill = "Cohort")
+
+  print(p)
 }
 ```
 
@@ -935,259 +935,258 @@ for(i in 1:9){
 
 ```{r student_scores}
 
-#converting survey answers to a likert scale
+# converting survey answers to a likert scale
 student_score <- student_surveys
 
-#This right here turns all the factor columns to numeric 
+# This right here turns all the factor columns to numeric
 student_score[sapply(student_score, is.factor)] <- lapply(student_score[sapply(student_score, is.factor)], as.character)
 
 # how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity
-for (i in 1:length(student_score$how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity)){
-      if(student_score$how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity[i] == "A great deal"){        
-        student_score$how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity[i] <- "5"
-      }
-      else if(student_score$how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity[i] == "A lot") {        
-        student_score$how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity[i] <- "4"
-      }
-      else if(student_score$how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity[i] == "A moderate amount") {        
-        student_score$how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity[i] <- "3"
-      }
-      else if(student_score$how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity[i] == "A little") {        
-        student_score$how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity[i] <- "2"
-      }
-      else if(student_score$how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity[i] == "None at all") {        
-        student_score$how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity[i] <- "1"
-      }
+for (i in 1:length(student_score$how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity)) {
+  if (student_score$how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity[i] == "A great deal") {
+    student_score$how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity[i] <- "5"
+  }
+  else if (student_score$how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity[i] == "A lot") {
+    student_score$how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity[i] <- "4"
+  }
+  else if (student_score$how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity[i] == "A moderate amount") {
+    student_score$how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity[i] <- "3"
+  }
+  else if (student_score$how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity[i] == "A little") {
+    student_score$how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity[i] <- "2"
+  }
+  else if (student_score$how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity[i] == "None at all") {
+    student_score$how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity[i] <- "1"
+  }
 }
 
 # how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback
-for (i in 1:length(student_score$how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback)){
-      if(student_score$how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback[i] == "A great deal"){        
-        student_score$how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback[i] <- "5"
-      }
-      else if(student_score$how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback[i] == "A lot") {        
-        student_score$how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback[i] <- "4"
-      }
-      else if(student_score$how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback[i] == "A moderate amount") {        
-        student_score$how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback[i] <- "3"
-      }
-      else if(student_score$how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback[i] == "A little") {        
-        student_score$how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback[i] <- "2"
-      }
-      else if(student_score$how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback[i] == "None at all") {        
-        student_score$how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback[i] <- "1"
-      }
+for (i in 1:length(student_score$how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback)) {
+  if (student_score$how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback[i] == "A great deal") {
+    student_score$how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback[i] <- "5"
+  }
+  else if (student_score$how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback[i] == "A lot") {
+    student_score$how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback[i] <- "4"
+  }
+  else if (student_score$how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback[i] == "A moderate amount") {
+    student_score$how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback[i] <- "3"
+  }
+  else if (student_score$how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback[i] == "A little") {
+    student_score$how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback[i] <- "2"
+  }
+  else if (student_score$how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback[i] == "None at all") {
+    student_score$how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback[i] <- "1"
+  }
 }
 
 # how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients
-for (i in 1:length(student_score$how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients)){
-      if(student_score$how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients[i] == "A great deal"){        
-        student_score$how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients[i] <- "5"
-      }
-      else if(student_score$how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients[i] == "A lot") {        
-        student_score$how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients[i] <- "4"
-      }
-      else if(student_score$how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients[i] == "A moderate amount") {        
-        student_score$how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients[i] <- "3"
-      }
-      else if(student_score$how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients[i] == "A little") {        
-        student_score$how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients[i] <- "2"
-      }
-      else if(student_score$how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients[i] == "None at all") {        
-        student_score$how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients[i] <- "1"
-      }
+for (i in 1:length(student_score$how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients)) {
+  if (student_score$how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients[i] == "A great deal") {
+    student_score$how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients[i] <- "5"
+  }
+  else if (student_score$how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients[i] == "A lot") {
+    student_score$how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients[i] <- "4"
+  }
+  else if (student_score$how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients[i] == "A moderate amount") {
+    student_score$how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients[i] <- "3"
+  }
+  else if (student_score$how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients[i] == "A little") {
+    student_score$how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients[i] <- "2"
+  }
+  else if (student_score$how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients[i] == "None at all") {
+    student_score$how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients[i] <- "1"
+  }
 }
 
 # how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client
-for (i in 1:length(student_score$how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client)){
-      if(student_score$how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client[i] == "A great deal"){        
-        student_score$how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client[i] <- "5"
-      }
-      else if(student_score$how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client[i] == "A lot") {        
-        student_score$how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client[i] <- "4"
-      }
-      else if(student_score$how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client[i] == "A moderate amount") {        
-        student_score$how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client[i] <- "3"
-      }
-      else if(student_score$how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client[i] == "A little") {        
-        student_score$how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client[i] <- "2"
-      }
-      else if(student_score$how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client[i] == "None at all") {        
-        student_score$how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client[i] <- "1"
-      }
+for (i in 1:length(student_score$how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client)) {
+  if (student_score$how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client[i] == "A great deal") {
+    student_score$how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client[i] <- "5"
+  }
+  else if (student_score$how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client[i] == "A lot") {
+    student_score$how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client[i] <- "4"
+  }
+  else if (student_score$how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client[i] == "A moderate amount") {
+    student_score$how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client[i] <- "3"
+  }
+  else if (student_score$how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client[i] == "A little") {
+    student_score$how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client[i] <- "2"
+  }
+  else if (student_score$how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client[i] == "None at all") {
+    student_score$how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client[i] <- "1"
+  }
 }
 
-# how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support 
-for (i in 1:length(student_score$how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support)){
-      if(student_score$how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support[i] == "A great deal"){        
-        student_score$how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support[i] <- "5"
-      }
-      else if(student_score$how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support[i] == "A lot") {        
-        student_score$how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support[i] <- "4"
-      }
-      else if(student_score$how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support[i] == "A moderate amount") {        
-        student_score$how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support[i] <- "3"
-      }
-      else if(student_score$how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support[i] == "A little") {        
-        student_score$how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support[i] <- "2"
-      }
-      else if(student_score$how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support[i] == "None at all") {        
-        student_score$how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support[i] <- "1"
-      }
+# how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support
+for (i in 1:length(student_score$how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support)) {
+  if (student_score$how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support[i] == "A great deal") {
+    student_score$how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support[i] <- "5"
+  }
+  else if (student_score$how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support[i] == "A lot") {
+    student_score$how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support[i] <- "4"
+  }
+  else if (student_score$how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support[i] == "A moderate amount") {
+    student_score$how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support[i] <- "3"
+  }
+  else if (student_score$how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support[i] == "A little") {
+    student_score$how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support[i] <- "2"
+  }
+  else if (student_score$how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support[i] == "None at all") {
+    student_score$how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support[i] <- "1"
+  }
 }
 
 # how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner
-for (i in 1:length(student_score$how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner)){
-      if(student_score$how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner[i] == "A great deal"){        
-        student_score$how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner[i] <- "5"
-      }
-      else if(student_score$how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner[i] == "A lot") {        
-        student_score$how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner[i] <- "4"
-      }
-      else if(student_score$how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner[i] == "A moderate amount") {        
-        student_score$how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner[i] <- "3"
-      }
-      else if(student_score$how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner[i] == "A little") {        
-        student_score$how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner[i] <- "2"
-      }
-      else if(student_score$how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner[i] == "None at all") {        
-        student_score$how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner[i] <- "1"
-      }
+for (i in 1:length(student_score$how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner)) {
+  if (student_score$how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner[i] == "A great deal") {
+    student_score$how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner[i] <- "5"
+  }
+  else if (student_score$how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner[i] == "A lot") {
+    student_score$how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner[i] <- "4"
+  }
+  else if (student_score$how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner[i] == "A moderate amount") {
+    student_score$how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner[i] <- "3"
+  }
+  else if (student_score$how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner[i] == "A little") {
+    student_score$how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner[i] <- "2"
+  }
+  else if (student_score$how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner[i] == "None at all") {
+    student_score$how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner[i] <- "1"
+  }
 }
 
 # how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization
-for (i in 1:length(student_score$how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization)){
-      if(student_score$how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization[i] == "Extremely useful"){        
-        student_score$how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization[i] <- "5"
-      }
-      else if(student_score$how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization[i] == "Very useful") {        
-        student_score$how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization[i] <- "4"
-      }
-      else if(student_score$how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization[i] == "Moderately useful") {        
-        student_score$how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization[i] <- "3"
-      }
-      else if(student_score$how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization[i] == "Slightly useful") {        
-        student_score$how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization[i] <- "2"
-      }
-      else if(student_score$how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization[i] == "Not at all useful") {        
-        student_score$how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization[i] <- "1"
-      }
+for (i in 1:length(student_score$how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization)) {
+  if (student_score$how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization[i] == "Extremely useful") {
+    student_score$how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization[i] <- "5"
+  }
+  else if (student_score$how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization[i] == "Very useful") {
+    student_score$how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization[i] <- "4"
+  }
+  else if (student_score$how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization[i] == "Moderately useful") {
+    student_score$how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization[i] <- "3"
+  }
+  else if (student_score$how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization[i] == "Slightly useful") {
+    student_score$how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization[i] <- "2"
+  }
+  else if (student_score$how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization[i] == "Not at all useful") {
+    student_score$how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization[i] <- "1"
+  }
 }
 
 # how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables
-for (i in 1:length(student_score$how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables)){
-      if(student_score$how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables[i] == "Extremely clear"){        
-        student_score$how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables[i] <- "5"
-      }
-      else if(student_score$how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables[i] == "Somewhat clear") {        
-        student_score$how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables[i] <- "4"
-      }
-      else if(student_score$how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables[i] == "Neither clear nor unclear") {        
-        student_score$how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables[i] <- "3"
-      }
-      else if(student_score$how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables[i] == "Somewhat unclear") {        
-        student_score$how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables[i] <- "2"
-      }
-      else if(student_score$how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables[i] == "Extremely unclear") {        
-        student_score$how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables[i] <- "1"
-      }
+for (i in 1:length(student_score$how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables)) {
+  if (student_score$how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables[i] == "Extremely clear") {
+    student_score$how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables[i] <- "5"
+  }
+  else if (student_score$how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables[i] == "Somewhat clear") {
+    student_score$how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables[i] <- "4"
+  }
+  else if (student_score$how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables[i] == "Neither clear nor unclear") {
+    student_score$how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables[i] <- "3"
+  }
+  else if (student_score$how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables[i] == "Somewhat unclear") {
+    student_score$how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables[i] <- "2"
+  }
+  else if (student_score$how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables[i] == "Extremely unclear") {
+    student_score$how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables[i] <- "1"
+  }
 }
 
 # how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization
-for (i in 1:length(student_score$how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization)){
-      if(student_score$how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization[i] == "Far too much"){        
-        student_score$how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization[i] <- "5"
-      }
-      else if(student_score$how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization[i] == "Slightly too much") {        
-        student_score$how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization[i] <- "4"
-      }
-      else if(student_score$how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization[i] == "About right") {        
-        student_score$how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization[i] <- "3"
-      }
-      else if(student_score$how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization[i] == "Slightly too little") {        
-        student_score$how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization[i] <- "2"
-      }
-      else if(student_score$how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization[i] == "Far too little") {        
-        student_score$how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization[i] <- "1"
-      }
+for (i in 1:length(student_score$how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization)) {
+  if (student_score$how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization[i] == "Far too much") {
+    student_score$how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization[i] <- "5"
+  }
+  else if (student_score$how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization[i] == "Slightly too much") {
+    student_score$how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization[i] <- "4"
+  }
+  else if (student_score$how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization[i] == "About right") {
+    student_score$how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization[i] <- "3"
+  }
+  else if (student_score$how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization[i] == "Slightly too little") {
+    student_score$how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization[i] <- "2"
+  }
+  else if (student_score$how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization[i] == "Far too little") {
+    student_score$how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization[i] <- "1"
+  }
 }
 
 # to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course
-for (i in 1:length(student_score$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course)){
-      if(student_score$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] == "Far exceeds expectations"){        
-        student_score$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] <- "5"
-      }
-      else if(student_score$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] == "Exceeds expectations") {        
-        student_score$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] <- "4"
-      }
-      else if(student_score$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] == "Equals expectations") {        
-        student_score$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] <- "3"
-      }
-      else if(student_score$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] == "Short of expectations") {        
-        student_score$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] <- "2"
-      }
-      else if(student_score$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] == "Far short of expectation") {        
-        student_score$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] <- "1"
-      }
+for (i in 1:length(student_score$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course)) {
+  if (student_score$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] == "Far exceeds expectations") {
+    student_score$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] <- "5"
+  }
+  else if (student_score$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] == "Exceeds expectations") {
+    student_score$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] <- "4"
+  }
+  else if (student_score$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] == "Equals expectations") {
+    student_score$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] <- "3"
+  }
+  else if (student_score$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] == "Short of expectations") {
+    student_score$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] <- "2"
+  }
+  else if (student_score$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] == "Far short of expectation") {
+    student_score$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[i] <- "1"
+  }
 }
 
 
 # how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project
-for (i in 1:length(student_score$how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project)){
-      if(student_score$how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project[i] == "A great deal"){        
-        student_score$how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project[i] <- "5"
-      }
-      else if(student_score$how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project[i] == "A lot") {        
-        student_score$how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project[i] <- "4"
-      }
-      else if(student_score$how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project[i] == "A moderate amount") {        
-        student_score$how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project[i] <- "3"
-      }
-      else if(student_score$how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project[i] == "A little") {        
-        student_score$how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project[i] <- "2"
-      }
-      else if(student_score$how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project[i] == "Not at all") {        
-        student_score$how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project[i] <- "1"
-      }
+for (i in 1:length(student_score$how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project)) {
+  if (student_score$how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project[i] == "A great deal") {
+    student_score$how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project[i] <- "5"
+  }
+  else if (student_score$how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project[i] == "A lot") {
+    student_score$how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project[i] <- "4"
+  }
+  else if (student_score$how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project[i] == "A moderate amount") {
+    student_score$how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project[i] <- "3"
+  }
+  else if (student_score$how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project[i] == "A little") {
+    student_score$how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project[i] <- "2"
+  }
+  else if (student_score$how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project[i] == "Not at all") {
+    student_score$how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project[i] <- "1"
+  }
 }
-
 ```
 
 
 ```{r print_out_student_score}
-#list of variables to convert to numeric
-to_numeric <- c('how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity',
-                                                        'how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback',
-                                                        'how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients',
-                                          'how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client',
-                                                        'how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support',
-                                                        'how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner',
-                                                        'how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization',
-                                                        'how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables',
-                                                        'how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization',
-                                                        'to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course',                                                        'how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project')
-#This right here turns all them to numeric type to be added
-student_score[to_numeric] <- sapply(student_score[to_numeric],as.numeric)
- 
+# list of variables to convert to numeric
+to_numeric <- c(
+  "how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity",
+  "how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback",
+  "how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients",
+  "how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client",
+  "how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support",
+  "how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner",
+  "how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization",
+  "how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables",
+  "how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization",
+  "to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course", "how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project"
+)
+# This right here turns all them to numeric type to be added
+student_score[to_numeric] <- sapply(student_score[to_numeric], as.numeric)
 
-#creating a survey score
+
+# creating a survey score
 student_score <- mutate(student_score, survey_score = (how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity +
-                                                        how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback +
-                                                        how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients +
-                                          how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client +
-                                                        how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support+
-                                                        how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner +
-                                                        how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization +
-                                                        how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables +
-                                                        how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization +
-                                                        to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course +
-                                                        how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project
-                                                         ))
+  how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback +
+  how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients +
+  how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client +
+  how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support +
+  how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner +
+  how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization +
+  how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables +
+  how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization +
+  to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course +
+  how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project
+))
 
-#Save this data so I can put in org and contributing information 
-#write.csv(student_score,"student_to_add_orgs.csv")
-
-
+# Save this data so I can put in org and contributing information
+# write.csv(student_score,"student_to_add_orgs.csv")
 ```
 
 
@@ -1197,7 +1196,7 @@ student_score <- mutate(student_score, survey_score = (how_much_do_you_believe_t
 ```{r student_surveys_contributing}
 student_plusorgs <- read_csv("data/student_plusorgs.csv")
 
-#Do orgs that contribute have higher survey ratings? The answer is no. OUt of a total of 40 possible points, those that did not contribute had an average score of 33.9 while those that did not had a score of 34.3, but based on the standard deviation, there is more variablility in the results for those that picked no. 
+# Do orgs that contribute have higher survey ratings? The answer is no. OUt of a total of 40 possible points, those that did not contribute had an average score of 33.9 while those that did not had a score of 34.3, but based on the standard deviation, there is more variablility in the results for those that picked no.
 contributing_yes <- filter(student_plusorgs, contributing == "yes")
 print(mean(contributing_yes$survey_score))
 print(sd(contributing_yes$survey_score))
@@ -1207,32 +1206,38 @@ print(mean(contributing_no$survey_score))
 print(sd(contributing_no$survey_score))
 
 
-#average score by cohort
-student_by_cohort <- student_plusorgs %>% group_by(cohort) %>% summarize(average_score = mean(survey_score), std = sd(survey_score))
+# average score by cohort
+student_by_cohort <- student_plusorgs %>%
+  group_by(cohort) %>%
+  summarize(average_score = mean(survey_score), std = sd(survey_score))
 student_by_cohort$cohort <- as.factor(student_by_cohort$cohort)
 
 
 # You need to reorder levels in factor
 library(tidyverse)
-student_by_cohort <- student_by_cohort %>% 
-                              mutate(cohort = fct_relevel(cohort, c("Spring 2019", "Summer 2019", "Fall 2019"))) %>%
-                              arrange(cohort)
+student_by_cohort <- student_by_cohort %>%
+  mutate(cohort = fct_relevel(cohort, c("Spring 2019", "Summer 2019", "Fall 2019"))) %>%
+  arrange(cohort)
 
 
-# Plot the average scores with error bars 
-p<-ggplot(data=student_by_cohort, aes(x=cohort, y=average_score, fill =cohort)) +
+# Plot the average scores with error bars
+p <- ggplot(data = student_by_cohort, aes(x = cohort, y = average_score, fill = cohort)) +
   theme_minimal() +
-  geom_bar(stat="identity", position = position_dodge()) +
-  geom_errorbar(aes(ymin=average_score-std, ymax=average_score+std), width=.2,
-               position=position_dodge(.9))+
-# geom_text(aes(label=average_score), vjust=1.6, color="white", size=3.5) +
-  theme(plot.title = element_text(hjust = 0.5),
-        text=element_text(face = "bold", size=14),
-        axis.text.y = element_text( hjust = 2)) +
-  scale_fill_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  geom_errorbar(aes(ymin = average_score - std, ymax = average_score + std),
+    width = .2,
+    position = position_dodge(.9)
+  ) +
+  # geom_text(aes(label=average_score), vjust=1.6, color="white", size=3.5) +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    text = element_text(face = "bold", size = 14),
+    axis.text.y = element_text(hjust = 2)
+  ) +
+  scale_fill_manual(values = c("#999999", "#E69F00", "#56B4E9")) +
   ggtitle("Average Student Survey Score by Cohort") +
-  labs(y="Average Score", x = "", fill = "Cohort") 
-  
+  labs(y = "Average Score", x = "", fill = "Cohort")
+
 p
 ```
 
@@ -1251,76 +1256,68 @@ na_raw$`MSDF Grantee`[is.na(na_raw$`MSDF Grantee`)] <- "N"
 na_raw$Organization <- as.factor(na_raw$Organization)
 na_raw <- as.data.frame(na_raw)
 
-#Hot coding the organization variable and creating a 
-na_bipartite <- dummy.data.frame(na_raw, names=c('Organization'), sep="_")
-na_bipartite <- select(na_bipartite, -c("Initiative", "Service Area","MSDF Grantee" ))
+# Hot coding the organization variable and creating a
+na_bipartite <- dummy.data.frame(na_raw, names = c("Organization"), sep = "_")
+na_bipartite <- select(na_bipartite, -c("Initiative", "Service Area", "MSDF Grantee"))
 
-#Remove duplicate rows 
-na_bipartite = unique(na_bipartite)
+# Remove duplicate rows
+na_bipartite <- unique(na_bipartite)
 
-#Organization that participate in multiple programs have their rows added together. 
+# Organization that participate in multiple programs have their rows added together.
 library(plyr)
-test = ddply(na_bipartite, "ORGANIZATION", numcolwise(sum))
+test <- ddply(na_bipartite, "ORGANIZATION", numcolwise(sum))
 test2 <- as.matrix(test)
-rownames(test2) = test2[,1]
-test2 = test2[,-1]
-colnames(test2) = c("Better Together Fund","Learn All the Time", "Mission Capital", "Mission Squared", "RGK CONNECT Program", "Strategic Collaboration")
+rownames(test2) <- test2[, 1]
+test2 <- test2[, -1]
+colnames(test2) <- c("Better Together Fund", "Learn All the Time", "Mission Capital", "Mission Squared", "RGK CONNECT Program", "Strategic Collaboration")
 
-#Create igraph object from adjacency matrix 
-g <-  graph_from_incidence_matrix(test2, weighted = T)
+# Create igraph object from adjacency matrix
+g <- graph_from_incidence_matrix(test2, weighted = T)
 g
 
 
-#plot 
+# plot
 
-#In this graph the size of the vertex has been altered base on the number of connections a node has. 
-plot(g, edge.color="slateblue",edge.width=E(g)$weight, layout=layout_nicely, vertex.label = ifelse(degree(g) > 4, V(g)$name, NA),vertex.size=sqrt(igraph::degree(g)*2), vertex.label.color="black",vertex.label.font=2, vertex.label.degree=1.5,vertex.label.cex=1.3, asp =-5, vertex.color="gold") #vertex.frame.color = "gold"
-title("NPO Network", cex.main=3)
+# In this graph the size of the vertex has been altered base on the number of connections a node has.
+plot(g, edge.color = "slateblue", edge.width = E(g)$weight, layout = layout_nicely, vertex.label = ifelse(degree(g) > 4, V(g)$name, NA), vertex.size = sqrt(igraph::degree(g) * 2), vertex.label.color = "black", vertex.label.font = 2, vertex.label.degree = 1.5, vertex.label.cex = 1.3, asp = -5, vertex.color = "gold") # vertex.frame.color = "gold"
+title("NPO Network", cex.main = 3)
 
-#Bipartite 
-plot(g, edge.color="slateblue",edge.width=E(g)$weight, layout=layout.bipartite, vertex.label=NA, vertex.size=6, asp =-5, main = "NPO Bipartite Graph", vertex.color="gold")
+# Bipartite
+plot(g, edge.color = "slateblue", edge.width = E(g)$weight, layout = layout.bipartite, vertex.label = NA, vertex.size = 6, asp = -5, main = "NPO Bipartite Graph", vertex.color = "gold")
 
-#Full Ring
-plot(g, edge.color="slateblue",edge.width=E(g)$weight, layout=layout_in_circle, vertex.label=NA, vertex.size=6, asp =-5, main = "NPO Ring Graph", vertex.color="gold")
+# Full Ring
+plot(g, edge.color = "slateblue", edge.width = E(g)$weight, layout = layout_in_circle, vertex.label = NA, vertex.size = 6, asp = -5, main = "NPO Ring Graph", vertex.color = "gold")
 
-#bipartite package
+# bipartite package
 library(bipartite)
 
-par(xpd=T)
+par(xpd = T)
 plotweb(g)
 visweb(g)
-
 ```
 
 ```{r all_network_layouts}
-layouts <- grep("^layout_", ls("package:igraph"), value=TRUE)[-1]
+layouts <- grep("^layout_", ls("package:igraph"), value = TRUE)[-1]
 # Remove layouts that do not apply to our graph.
 layouts <- layouts[!grepl("bipartite|merge|norm|sugiyama|tree", layouts)]
-par(mfrow=c(3,3), mar=c(1,1,1,1))
+par(mfrow = c(3, 3), mar = c(1, 1, 1, 1))
 for (layout in layouts) {
-print(layout)
-l <- do.call(layout, list(g))
-plot(g, vertex.color="gold",edge.color="slateblue",edge.width=E(g)$weight,vertex.label=NA, vertex.size=6, asp =-5,layout=l, main=layout) }
-
-
-
-
-
+  print(layout)
+  l <- do.call(layout, list(g))
+  plot(g, vertex.color = "gold", edge.color = "slateblue", edge.width = E(g)$weight, vertex.label = NA, vertex.size = 6, asp = -5, layout = l, main = layout)
+}
 ```
 
 # Assembling a dataset of node-level measures
 
 ```{r node_centrality}
-names=V(g)$name
-de=degree(g)
-st=graph.strength(g)
-be=betweenness(g, normalized=T)
+names <- V(g)$name
+de <- degree(g)
+st <- graph.strength(g)
+be <- betweenness(g, normalized = T)
 
 
-#assemble dataset
-d=data.frame(node.name=names, degree=de, strength=st, betweenness=be) 
-head(d) #display first 6 lines of data
-
-
+# assemble dataset
+d <- data.frame(node.name = names, degree = de, strength = st, betweenness = be)
+head(d) # display first 6 lines of data
 ```
-
