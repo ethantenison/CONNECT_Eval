@@ -597,7 +597,7 @@ organization_survey_fall_2019 <- read_csv("data/Organization Survey_Fall 2019.cs
 organization_survey_fall_2019 <- mutate(organization_survey_fall_2019, cohort = "Fall 2019")
 organization_survey_spring_2020 <- read_csv("data/Organization Survey_Spring 2020.csv")
 organization_survey_spring_2020 <- mutate(organization_survey_spring_2020, cohort = "Spring 2020")
-organization_surveys <- bind_rows(organization_survey_spring_2019, organization_survey_summer_2019, organization_survey_fall_2019)
+organization_surveys <- bind_rows(organization_survey_spring_2019, organization_survey_summer_2019, organization_survey_fall_2019, organization_survey_spring_2020 )
 
 prestandardize <- organization_surveys
 
@@ -656,7 +656,29 @@ contributed <- data.frame("contributed" = c(
   "no",
   "no",
   "yes",
-  "no" # in fall 2019 open preschool did not but in summer 2019 they did
+  "no", # in fall 2019 open preschool did not but in summer 2019 they did
+  "yes", #Central Texas Education Funders
+  "no",
+  "no",
+  "no",
+  "yes",
+  "no", #goodwill central texas
+  "yes",
+  "no",
+  "yes",
+  "no",
+  "no", #Thinkery
+  "no",
+  "no",
+  "no",
+  "yes",
+  "no",
+  "no", #Avance
+  "no",
+  "no",
+  "no",
+  "yes",
+  "yes"
 ))
 
 organization_surveys <- bind_cols(organization_surveys, contributed)
@@ -853,7 +875,7 @@ org_by_cohort$cohort <- as.factor(org_by_cohort$cohort)
 # You need to reorder levels in factor
 library(tidyverse)
 org_by_cohort <- org_by_cohort %>%
-  mutate(cohort = fct_relevel(cohort, c("Spring 2019", "Summer 2019", "Fall 2019"))) %>%
+  mutate(cohort = fct_relevel(cohort, c("Spring 2019", "Summer 2019", "Fall 2019", "Spring 2020"))) %>%
   arrange(cohort)
 
 # Plot the average scores with error bars
@@ -870,7 +892,7 @@ p <- ggplot(data = org_by_cohort, aes(x = cohort, y = average_score, fill = coho
     text = element_text(face = "bold", size = 14),
     axis.text.y = element_text(hjust = 2)
   ) +
-  scale_fill_manual(values = c("#999999", "#E69F00", "#56B4E9")) +
+  scale_fill_manual(values = c("#999999", "#E69F00", "#56B4E9", "#39ff14")) +
   ggtitle("Average Org Survey Score by Cohort") +
   labs(y = "Average Score", x = "", fill = "Cohort")
 
