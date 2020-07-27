@@ -31,7 +31,7 @@ student_survey_summer_2019 <- mutate(student_survey_summer_2019, cohort = "Summe
 student_survey_fall_2019 <- read_csv("data/Student survey_Fall 2019.csv")
 student_survey_fall_2019 <- mutate(student_survey_fall_2019, cohort = "Fall 2019")
 student_survey_spring_2020 <- read_csv("data/Student survey_Spring 2020.csv")
-student_survey_spring_2020 <- mutate(student_survey_spring_2019, cohort = "Spring 2020")
+student_survey_spring_2020 <- mutate(student_survey_spring_2020, cohort = "Spring 2020")
 
 student_surveys <- bind_rows(student_survey_spring_2019, student_survey_summer_2019, student_survey_fall_2019, student_survey_spring_2020)
 
@@ -583,8 +583,6 @@ org_financial_contribution <- full_join(organization_surveys, org_financial_cont
 ```
 
 
-# Creating this yes contributed did not contribute thing is real confusing 
-
 
 
 ```{r recreating_financial_contribution, echo=FALSE, message =FALSE, warning = FALSE}
@@ -852,12 +850,14 @@ organization_surveys <- mutate(organization_surveys, survey_score = (to_what_ext
 
 # Do orgs that contribute have higher survey ratings? The answer is no. OUt of a total of 40 possible points, those that did not contribute had an average score of 33.9 while those that did not had a score of 34.3, but based on the standard deviation, there is more variablility in the results for those that picked no.
 contributing_yes <- filter(organization_surveys, contributed == "yes")
-print(mean(contributing_yes$survey_score))
-print(sd(contributing_yes$survey_score))
+print("Contributing Organizations")
+print(mean(contributing_yes$survey_score), "Average Survey Score")
+print(sd(contributing_yes$survey_score), "Standard Deviation")
 
 contributing_no <- filter(organization_surveys, contributed == "no")
-print(mean(contributing_no$survey_score))
-print(sd(contributing_no$survey_score))
+print("Non-contributing Organizations")
+print(mean(contributing_no$survey_score), "Average Survey Score")
+print(sd(contributing_no$survey_score), "Standard Deviation")
 ```
 
 # Plot average score by cohort
@@ -892,7 +892,7 @@ p <- ggplot(data = org_by_cohort, aes(x = cohort, y = average_score, fill = coho
     text = element_text(face = "bold", size = 14),
     axis.text.y = element_text(hjust = 2)
   ) +
-  scale_fill_manual(values = c("#999999", "#E69F00", "#56B4E9", "#39ff14")) +
+  scale_fill_manual(values = c("#999999", "#E69F00", "#56B4E9", "#398814")) +
   ggtitle("Average Org Survey Score by Cohort") +
   labs(y = "Average Score", x = "", fill = "Cohort")
 
@@ -901,56 +901,48 @@ p
 
 # Now lets look at each likert scale question
 
-
-```{r likert_org}
-
+```{r org_questions_part2}
 org_likerts <- organization_surveys[, 3:13]
 org_likerts <- select(org_likerts, -c("are_you_willing_for_the_program_or_the_rgk_center_to_share_highlights_of_your_organizations_project_in_marketing_evaluation_and_recruitment_materials_in_the_future"))
+org_likerts <- org_likerts[, -5]
 question_title <- colnames(org_likerts)
 
-org_likerts <- org_likerts %>%
-  group_by(cohort) %>%
-  summarize(average_score = mean(how_satisfied_are_you_with_the_relationship_with_your_consultant_s), std = sd(how_satisfied_are_you_with_the_relationship_with_your_consultant_s))
+# Reshape the data to get the mean and standard deviation from each question
+library(plyr)
+library(reshape2)
+melted <- melt(org_likerts, id.vars = c("cohort"))
+org_summary <- ddply(melted, c("cohort", "variable"), summarise,
+  mean = mean(value), sd = sd(value),
+  sem = sd(value) / sqrt(length(value))
+)
 
+org_summary <- org_summary %>% mutate(cohort = fct_relevel(cohort, c("Spring 2019", "Summer 2019", "Fall 2019", "Spring 2020")))
+
+# Loop it over each question
 for (i in 1:9) {
+  question <- filter(org_summary, variable == question_title[i])
 
 
-
-  # average score by cohort
-  org_likerts <- org_likerts %>%
-    group_by(cohort) %>%
-    summarize(average_score = mean(org_likerts[[i]]), std = sd(org_likerts[[i]]))
-  org_likerts$cohort <- as.factor(org_likerts$cohort)
-
-
-
-  # You need to reorder levels in factor
-  library(tidyverse)
-  org_likerts <- org_likerts %>%
-    mutate(cohort = fct_relevel(cohort, c("Spring 2019", "Summer 2019", "Fall 2019"))) %>%
-    arrange(cohort)
-
-  # Plot the average scores with error bars
-  p <- ggplot(data = org_likerts, aes(x = cohort, y = average_score, fill = cohort)) +
+  p <- ggplot(question, aes(x = cohort, y = mean, fill = cohort)) +
     theme_minimal() +
     geom_bar(stat = "identity", position = position_dodge()) +
-    geom_errorbar(aes(ymin = average_score - std, ymax = average_score + std),
+    geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd),
       width = .2,
       position = position_dodge(.9)
     ) +
     theme(
       plot.title = element_text(hjust = 0.5),
-      text = element_text(face = "bold", size = 10),
+      text = element_text(face = "bold", size = 14),
       axis.text.y = element_text(hjust = 2)
     ) +
-    scale_fill_manual(values = c("#999999", "#E69F00", "#56B4E9")) +
+    scale_fill_manual(values = c("#999999", "#E69F00", "#56B4E9", "#398814")) +
     ggtitle(question_title[i]) +
     labs(y = "Average Score", x = "", fill = "Cohort")
 
   print(p)
 }
-```
 
+```
 
 # Do students who work for nonprofits that contribute have higher survey scores? 
 
@@ -959,6 +951,9 @@ for (i in 1:9) {
 
 # converting survey answers to a likert scale
 student_score <- student_surveys
+
+#For some reason there are NA values 
+student_score <- na.omit(student_score)
 
 # This right here turns all the factor columns to numeric
 student_score[sapply(student_score, is.factor)] <- lapply(student_score[sapply(student_score, is.factor)], as.character)
@@ -1172,10 +1167,8 @@ for (i in 1:length(student_score$how_supported_did_you_feel_by_the_program_coord
     student_score$how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project[i] <- "1"
   }
 }
-```
 
 
-```{r print_out_student_score}
 # list of variables to convert to numeric
 to_numeric <- c(
   "how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity",
@@ -1208,7 +1201,9 @@ student_score <- mutate(student_score, survey_score = (how_much_do_you_believe_t
 ))
 
 # Save this data so I can put in org and contributing information
-# write.csv(student_score,"student_to_add_orgs.csv")
+write.csv(student_score,"data/student_to_add_orgs.csv")
+
+#after this you have to manually add the orgs and create a yes they contributed or not column, use connect project fellows list 
 ```
 
 
@@ -1229,16 +1224,17 @@ print(sd(contributing_no$survey_score))
 
 
 # average score by cohort
+student_plusorgs$cohort <- as.factor(student_plusorgs$cohort)
 student_by_cohort <- student_plusorgs %>%
   group_by(cohort) %>%
   summarize(average_score = mean(survey_score), std = sd(survey_score))
-student_by_cohort$cohort <- as.factor(student_by_cohort$cohort)
+
 
 
 # You need to reorder levels in factor
 library(tidyverse)
 student_by_cohort <- student_by_cohort %>%
-  mutate(cohort = fct_relevel(cohort, c("Spring 2019", "Summer 2019", "Fall 2019"))) %>%
+  mutate(cohort = fct_relevel(cohort, c("Spring 2019", "Summer 2019", "Fall 2019", "Spring 2020"))) %>%
   arrange(cohort)
 
 
