@@ -1201,7 +1201,7 @@ student_score <- mutate(student_score, survey_score = (how_much_do_you_believe_t
 ))
 
 # Save this data so I can put in org and contributing information
-write.csv(student_score,"data/student_to_add_orgs.csv")
+#write.csv(student_score,"data/student_to_add_orgs.csv")
 
 #after this you have to manually add the orgs and create a yes they contributed or not column, use connect project fellows list 
 ```
@@ -1212,8 +1212,10 @@ write.csv(student_score,"data/student_to_add_orgs.csv")
 
 ```{r student_surveys_contributing}
 student_plusorgs <- read_csv("data/student_plusorgs.csv")
+student_plusorgs <- as_tibble(student_plusorgs)
+student_plusorgs$cohort <- as.factor(student_plusorgs$cohort)
+student_plusorgs <- student_plusorgs[,-1]
 
-# Do orgs that contribute have higher survey ratings? The answer is no. OUt of a total of 40 possible points, those that did not contribute had an average score of 33.9 while those that did not had a score of 34.3, but based on the standard deviation, there is more variablility in the results for those that picked no.
 contributing_yes <- filter(student_plusorgs, contributing == "yes")
 print(mean(contributing_yes$survey_score))
 print(sd(contributing_yes$survey_score))
@@ -1222,10 +1224,9 @@ contributing_no <- filter(student_plusorgs, contributing == "no")
 print(mean(contributing_no$survey_score))
 print(sd(contributing_no$survey_score))
 
-
 # average score by cohort
-student_plusorgs$cohort <- as.factor(student_plusorgs$cohort)
-student_by_cohort <- student_plusorgs %>%
+student_score$cohort <- as.factor(student_score$cohort)
+student_by_cohort <- student_score %>%
   group_by(cohort) %>%
   summarize(average_score = mean(survey_score), std = sd(survey_score))
 
@@ -1236,7 +1237,6 @@ library(tidyverse)
 student_by_cohort <- student_by_cohort %>%
   mutate(cohort = fct_relevel(cohort, c("Spring 2019", "Summer 2019", "Fall 2019", "Spring 2020"))) %>%
   arrange(cohort)
-
 
 # Plot the average scores with error bars
 p <- ggplot(data = student_by_cohort, aes(x = cohort, y = average_score, fill = cohort)) +
@@ -1252,11 +1252,61 @@ p <- ggplot(data = student_by_cohort, aes(x = cohort, y = average_score, fill = 
     text = element_text(face = "bold", size = 14),
     axis.text.y = element_text(hjust = 2)
   ) +
-  scale_fill_manual(values = c("#999999", "#E69F00", "#56B4E9")) +
+  scale_fill_manual(values = c("#999999", "#E69F00", "#56B4E9", "#398814")) +
   ggtitle("Average Student Survey Score by Cohort") +
   labs(y = "Average Score", x = "", fill = "Cohort")
 
 p
+
+```
+
+
+
+```{r surveyquestion_student}
+# average score by cohort
+student_plusorgs <- read_csv("data/student_plusorgs.csv")
+student_plusorgs$cohort <- as.factor(student_plusorgs$cohort)
+cohort <- select(student_plusorgs, cohort)
+student_plusorgs <- student_plusorgs[,4:15]
+student_plusorgs <- student_plusorgs[, -10]
+student_plusorgs <- cbind(student_plusorgs, cohort)
+question_title <- colnames(student_plusorgs)
+
+
+# Reshape the data to get the mean and standard deviation from each question
+library(plyr)
+library(reshape2)
+melted <- melt(student_plusorgs, id.vars = c("cohort"))
+student_summary <- ddply(melted, c("cohort", "variable"), summarise,
+  mean = mean(value), sd = sd(value),
+  sem = sd(value) / sqrt(length(value))
+)
+
+student_summary <- student_summary %>% mutate(cohort = fct_relevel(cohort, c("Spring 2019", "Summer 2019", "Fall 2019", "Spring 2020")))
+
+# Loop it over each question
+for (i in 1:9) {
+  question <- filter(student_summary, variable == question_title[i])
+
+
+  p <- ggplot(question, aes(x = cohort, y = mean, fill = cohort)) +
+    theme_minimal() +
+    geom_bar(stat = "identity", position = position_dodge()) +
+    geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd),
+      width = .2,
+      position = position_dodge(.9)
+    ) +
+    theme(
+      plot.title = element_text(hjust = 0.5),
+      text = element_text(face = "bold", size = 14),
+      axis.text.y = element_text(hjust = 2)
+    ) +
+    scale_fill_manual(values = c("#999999", "#E69F00", "#56B4E9", "#398814")) +
+    ggtitle(question_title[i]) +
+    labs(y = "Average Score", x = "", fill = "Cohort")
+
+  print(p)
+}
 ```
 
 
