@@ -1308,7 +1308,7 @@ for (i in 1:9) {
   print(p)
 }
 ```
-
+# Network Analysis 
 
 ```{r network_analysis}
 
@@ -1388,4 +1388,63 @@ be <- betweenness(g, normalized = T)
 # assemble dataset
 d <- data.frame(node.name = names, degree = de, strength = st, betweenness = be)
 head(d) # display first 6 lines of data
+```
+
+# Revised Network Analysis 
+
+*Undefined mission capital was taken out and RGK courses were added 
+*The new dataset was created using the cen-tex database, RGK course offerings google sheet, measuring what matters and data leadership google sheets, 
+*better together fund changed to Austin Together Fund
+
+
+```{r na_revised}
+library(readr)
+library(caret)
+library(readxl)
+library(igraph)
+library(mltools)
+library(dummies)
+library(dplyr)
+set.seed(27)
+
+
+augmented_na <- read_csv("data/augmented_networkanalysis_summer2020.csv")
+augmented_na$Initiative <- as.factor(augmented_na$Initiative)
+augmented_na <- as.data.frame(augmented_na)
+
+# Hot coding the organization variable and creating a
+augmented_na <- dummy.data.frame(augmented_na, names = c("Initiative"), sep = "_")
+
+
+# Organization that participate in multiple programs have their rows added together.
+library(plyr)
+augmented_na <- ddply(augmented_na, "ORGANIZATION", numcolwise(sum))
+augmented_na <- as.matrix(augmented_na)
+rownames(augmented_na) <- augmented_na[, 1]
+augmented_na <- augmented_na[, -1]
+#colnames(test2) <- c("Better Together Fund", "Learn All the Time", "Mission Capital", "Mission Squared", "RGK CONNECT Program", "Strategic Collaboration")
+
+# Create igraph object from adjacency matrix
+g <- graph_from_incidence_matrix(augmented_na, weighted = T)
+g
+
+# plot
+
+# In this graph the size of the vertex has been altered base on the number of connections a node has.
+plot(g, edge.color = "slateblue", edge.width = E(g)$weight, layout = layout_nicely, vertex.label = ifelse(degree(g) > 4, V(g)$name, NA), vertex.size = sqrt(igraph::degree(g) * 2), vertex.label.color = "black", vertex.label.font = 2, vertex.label.degree = 1.5, vertex.label.cex = 1.3, asp = -5, vertex.color = "gold") # vertex.frame.color = "gold"
+title("NPO Network", cex.main = 3)
+
+# Bipartite
+plot(g, edge.color = "slateblue", edge.width = E(g)$weight, layout = layout.bipartite, vertex.label = NA, vertex.size = 6, asp = -5, main = "NPO Bipartite Graph", vertex.color = "gold")
+
+# Full Ring
+plot(g, edge.color = "slateblue", edge.width = E(g)$weight, layout = layout_in_circle, vertex.label = NA, vertex.size = 6, asp = -5, main = "NPO Ring Graph", vertex.color = "gold")
+
+# bipartite package
+library(bipartite)
+
+par(xpd = T)
+plotweb(g)
+visweb(g)
+
 ```
