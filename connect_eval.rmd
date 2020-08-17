@@ -1347,7 +1347,7 @@ g
 # plot
 
 # In this graph the size of the vertex has been altered base on the number of connections a node has.
-plot(g, edge.color = "slateblue", edge.width = E(g)$weight, layout = layout_nicely, vertex.label = ifelse(degree(g) > 4, V(g)$name, NA), vertex.size = sqrt(igraph::degree(g) * 2), vertex.label.color = "black", vertex.label.font = 2, vertex.label.degree = 1.5, vertex.label.cex = 1.3, asp = -5, vertex.color = "gold") # vertex.frame.color = "gold"
+plot(g, edge.color = "slateblue", edge.width = E(g)$weight, layout = layout_nicely, vertex.label = ifelse(igraph::degree(g) > 4, V(g)$name, NA), vertex.size = sqrt(igraph::degree(g) * 2), vertex.label.color = "black", vertex.label.font = 2, vertex.label.degree = 1.5, vertex.label.cex = 1.3, asp = -5, vertex.color = "gold") # vertex.frame.color = "gold"
 title("NPO Network", cex.main = 3)
 
 # Bipartite
@@ -1419,19 +1419,33 @@ augmented_na <- dummy.data.frame(augmented_na, names = c("Initiative"), sep = "_
 # Organization that participate in multiple programs have their rows added together.
 library(plyr)
 augmented_na <- ddply(augmented_na, "ORGANIZATION", numcolwise(sum))
+augmented_na$CONNECT_courses <- augmented_na$`Initiative_RGK Course - Consulting for Social Impact` +
+                                augmented_na$`Initiative_RGK Course - Data Management & Research Life Cycle` +
+                                augmented_na$`Initiative_RGK Course - Program Evaluation for Nonprofit, Public, & Social Impact Initiatives`+
+                                augmented_na$`Initiative_RGK Course - Social Impact Case Program`
+
+augmented_na <- dplyr::select(augmented_na, -c(`Initiative_RGK Course - Consulting for Social Impact`,
+                                               `Initiative_RGK Course - Data Management & Research Life Cycle`,
+                                               `Initiative_RGK Course - Program Evaluation for Nonprofit, Public, & Social Impact Initiatives`,
+                                               `Initiative_RGK Course - Social Impact Case Program`))
+
+
 augmented_na <- as.matrix(augmented_na)
 rownames(augmented_na) <- augmented_na[, 1]
 augmented_na <- augmented_na[, -1]
-#colnames(test2) <- c("Better Together Fund", "Learn All the Time", "Mission Capital", "Mission Squared", "RGK CONNECT Program", "Strategic Collaboration")
+
+
+colnames(augmented_na) <- c("Austin Together Fund", "GM- Data Leaders Academy", "GM - Measuring What Matters","Learn All the Time","MC - Data Intelligence", "MC - Leadership Development","MC - Smart Operations", "Mission Squared", "CONNECT", "CONNECT Courses")
+
 
 # Create igraph object from adjacency matrix
 g <- graph_from_incidence_matrix(augmented_na, weighted = T)
 g
 
-# plot
+
 
 # In this graph the size of the vertex has been altered base on the number of connections a node has.
-plot(g, edge.color = "slateblue", edge.width = E(g)$weight, layout = layout_nicely, vertex.label = ifelse(degree(g) > 4, V(g)$name, NA), vertex.size = sqrt(igraph::degree(g) * 2), vertex.label.color = "black", vertex.label.font = 2, vertex.label.degree = 1.5, vertex.label.cex = 1.3, asp = -5, vertex.color = "gold") # vertex.frame.color = "gold"
+plot(g, edge.color = "slateblue", edge.width = E(g)$weight, layout = layout_nicely, vertex.label = ifelse(igraph::degree(g) > 4, V(g)$name, NA), vertex.size = sqrt(igraph::degree(g) * 2), vertex.label.color = "black", vertex.label.font = 2, vertex.label.degree = 1.5, vertex.label.cex = 1.3, asp = -5, vertex.color = "gold") # vertex.frame.color = "gold"
 title("NPO Network", cex.main = 3)
 
 # Bipartite
@@ -1447,4 +1461,89 @@ par(xpd = T)
 plotweb(g)
 visweb(g)
 
+```
+
+```{r, npo_network_condensed}
+
+library(readr)
+library(caret)
+library(readxl)
+library(igraph)
+library(mltools)
+library(dummies)
+library(dplyr)
+set.seed(27)
+
+
+augmented_na <- read_csv("data/augmented_networkanalysis_summer2020.csv")
+augmented_na$Initiative <- as.factor(augmented_na$Initiative)
+augmented_na <- as.data.frame(augmented_na)
+
+# Hot coding the organization variable and creating a
+augmented_na <- dummy.data.frame(augmented_na, names = c("Initiative"), sep = "_")
+
+
+# Organization that participate in multiple programs have their rows added together.
+library(plyr)
+augmented_na <- ddply(augmented_na, "ORGANIZATION", numcolwise(sum))
+augmented_na$CONNECT_courses <- augmented_na$`Initiative_RGK Course - Consulting for Social Impact` +
+                                augmented_na$`Initiative_RGK Course - Data Management & Research Life Cycle` +
+                                augmented_na$`Initiative_RGK Course - Program Evaluation for Nonprofit, Public, & Social Impact Initiatives`+
+                                augmented_na$`Initiative_RGK Course - Social Impact Case Program`
+
+augmented_na$Good_Measure <- augmented_na$`Initiative_Good Measure - Data Leaders Academy` +
+                             augmented_na$`Initiative_Good Measure - Measuring What Matters` 
+
+augmented_na$Mission_Capital <- augmented_na$`Initiative_Mission Capital - Data Intelligence` +
+                             augmented_na$`Initiative_Mission Capital - Leadership Development` +
+                             augmented_na$`Initiative_Mission Capital - Smart Operations`
+
+augmented_na <- dplyr::select(augmented_na, ORGANIZATION, `Initiative_Austin Together Fund`, `Initiative_Learn All the Time`, `Initiative_Mission Squared`,
+                              `Initiative_RGK CONNECT Program`, CONNECT_courses, Good_Measure, Mission_Capital)
+
+
+augmented_na <- as.matrix(augmented_na)
+rownames(augmented_na) <- augmented_na[, 1]
+augmented_na <- augmented_na[, -1]
+
+
+colnames(augmented_na) <- c("Austin Together Fund", "Learn All the Time","Mission Squared", "CONNECT Program", "CONNECT Courses", "Good Measure", "Mission Capital")
+
+
+# Create igraph object from adjacency matrix
+g <- graph_from_incidence_matrix(augmented_na, weighted = T)
+g
+
+
+
+# In this graph the size of the vertex has been altered base on the number of connections a node has.
+plot(g, edge.color = "slateblue", edge.width = E(g)$weight, layout = layout_nicely, vertex.label = ifelse(igraph::degree(g) > 4, V(g)$name, NA), vertex.size = sqrt(igraph::degree(g) * 2), vertex.label.color = "black", vertex.label.font = 2, vertex.label.degree = 1.5, vertex.label.cex = 1.3, asp = -5, vertex.color = "gold") # vertex.frame.color = "gold"
+title("NPO Network", cex.main = 3)
+
+# Bipartite
+plot(g, edge.color = "slateblue", edge.width = E(g)$weight, layout = layout.bipartite, vertex.label = NA, vertex.size = 6, asp = -5, main = "NPO Bipartite Graph", vertex.color = "gold")
+
+# Full Ring
+plot(g, edge.color = "slateblue", edge.width = E(g)$weight, layout = layout_in_circle, vertex.label = NA, vertex.size = 6, asp = -5, main = "NPO Ring Graph", vertex.color = "gold")
+
+# bipartite package
+library(bipartite)
+
+par(xpd = T)
+plotweb(g)
+visweb(g)
+
+
+```
+
+```{r all_network_layouts}
+layouts <- grep("^layout_", ls("package:igraph"), value = TRUE)[-1]
+# Remove layouts that do not apply to our graph.
+layouts <- layouts[!grepl("bipartite|merge|norm|sugiyama|tree", layouts)]
+par(mfrow = c(3, 3), mar = c(1, 1, 1, 1))
+for (layout in layouts) {
+  print(layout)
+  l <- do.call(layout, list(g))
+  plot(g, vertex.color = "gold", edge.color = "slateblue", edge.width = E(g)$weight, vertex.label = NA, vertex.size = 6, asp = -5, layout = l, main = layout)
+}
 ```
