@@ -1547,3 +1547,72 @@ for (layout in layouts) {
   plot(g, vertex.color = "gold", edge.color = "slateblue", edge.width = E(g)$weight, vertex.label = NA, vertex.size = 6, asp = -5, layout = l, main = layout)
 }
 ```
+
+```{r, na_ggraph}
+
+
+library(readr)
+library(caret)
+library(readxl)
+library(igraph)
+library(mltools)
+library(dummies)
+library(dplyr)
+library(ggraph)
+library(tidygraph)
+set.seed(27)
+
+
+augmented_na <- read_csv("data/augmented_networkanalysis_summer2020.csv")
+augmented_na$Initiative <- as.factor(augmented_na$Initiative)
+augmented_na <- as.data.frame(augmented_na)
+
+# Hot coding the organization variable and creating a
+augmented_na <- dummy.data.frame(augmented_na, names = c("Initiative"), sep = "_")
+
+
+# Organization that participate in multiple programs have their rows added together.
+library(plyr)
+augmented_na <- ddply(augmented_na, "ORGANIZATION", numcolwise(sum))
+augmented_na$CONNECT_courses <- augmented_na$`Initiative_RGK Course - Consulting for Social Impact` +
+                                augmented_na$`Initiative_RGK Course - Data Management & Research Life Cycle` +
+                                augmented_na$`Initiative_RGK Course - Program Evaluation for Nonprofit, Public, & Social Impact Initiatives`+
+                                augmented_na$`Initiative_RGK Course - Social Impact Case Program`
+
+augmented_na$Good_Measure <- augmented_na$`Initiative_Good Measure - Data Leaders Academy` +
+                             augmented_na$`Initiative_Good Measure - Measuring What Matters` 
+
+augmented_na$Mission_Capital <- augmented_na$`Initiative_Mission Capital - Data Intelligence` +
+                             augmented_na$`Initiative_Mission Capital - Leadership Development` +
+                             augmented_na$`Initiative_Mission Capital - Smart Operations`
+
+augmented_na <- dplyr::select(augmented_na, ORGANIZATION, `Initiative_Austin Together Fund`, `Initiative_Learn All the Time`, `Initiative_Mission Squared`,
+                              `Initiative_RGK CONNECT Program`, CONNECT_courses, Good_Measure, Mission_Capital)
+
+
+augmented_na <- as.matrix(augmented_na)
+rownames(augmented_na) <- augmented_na[, 1]
+augmented_na <- augmented_na[, -1]
+
+
+colnames(augmented_na) <- c("Austin Together Fund", "Learn All the Time","Mission Squared", "CONNECT Program", "CONNECT Courses", "Good Measure", "Mission Capital")
+
+
+# Create igraph object from adjacency matrix
+g <- graph_from_incidence_matrix(augmented_na, weighted = T)
+
+edges <- get.edgelist(g)
+
+na_data <- as_tbl_graph(edges) %>% 
+    dplyr::mutate(Connectedness = centrality_degree(mode = 'in')) 
+
+
+ggraph(na_data, layout = 'circle') + 
+    geom_edge_fan(aes(alpha = stat(index)), show.legend = FALSE) + 
+    geom_node_point(aes(size = Connectedness)) + 
+    theme_graph(foreground = 'steelblue', fg_text_colour = 'white')
+# ggraph(g, layout= "gem") +
+#   geom_edge_link0(alpha = 0.3) +
+#   geom_node_point(aes(color = "pink"))
+
+```
