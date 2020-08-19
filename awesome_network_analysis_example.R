@@ -118,10 +118,10 @@ graph <- graph_from_data_frame(edges, vertices = vertices)
 layout <- create_layout(graph, layout = 'circle')
 
 outer_circle <- layout %>%
-  filter(level == 1) %>%
-  mutate(language = factor(language, names(top_language_colors))) %>%
-  arrange(language, desc(name)) %>%
-  mutate(
+  dplyr::filter(level == 1) %>%
+  dplyr::mutate(language = factor(language, names(top_language_colors))) %>%
+  dplyr::arrange(language, desc(name)) %>%
+  dplyr::mutate(
     x = cos((row_number() - 1) / number_of_pkgs * 2 * pi),
     y = sin((row_number() - 1) / number_of_pkgs * 2 * pi)
   )
@@ -136,7 +136,7 @@ centers <- tibble(
 inner_circle <- bind_cols(centers, select(filter(layout, level != 1), -x, -y))
 
 layout[] <- bind_rows(outer_circle, inner_circle) %>%
-  arrange(ggraph.index)
+  dplyr::arrange(.ggraph.index)
 
 ggraph(layout) +
   geom_edge_diagonal(

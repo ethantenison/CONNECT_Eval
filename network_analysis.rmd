@@ -18,90 +18,217 @@ library(tidygraph)
 set.seed(27)
 
 
-augmented_na <- read_csv("data/augmented_networkanalysis_summer2020.csv")
+augmented_na <-
+  read_csv("data/augmented_networkanalysis_summer2020.csv")
 augmented_na$Initiative <- as.factor(augmented_na$Initiative)
 augmented_na <- as.data.frame(augmented_na)
 
 # Hot coding the organization variable and creating a
-augmented_na <- dummy.data.frame(augmented_na, names = c("Initiative"), sep = "_")
+augmented_na <-
+  dummy.data.frame(augmented_na, names = c("Initiative"), sep = "_")
 
 
 # Organization that participate in multiple programs have their rows added together.
 library(plyr)
 augmented_na <- ddply(augmented_na, "ORGANIZATION", numcolwise(sum))
-augmented_na$CONNECT_courses <- augmented_na$`Initiative_RGK Course - Consulting for Social Impact` +
-                                augmented_na$`Initiative_RGK Course - Data Management & Research Life Cycle` +
-                                augmented_na$`Initiative_RGK Course - Program Evaluation for Nonprofit, Public, & Social Impact Initiatives`+
-                                augmented_na$`Initiative_RGK Course - Social Impact Case Program`
+augmented_na$CONNECT_courses <-
+  augmented_na$`Initiative_RGK Course - Consulting for Social Impact` +
+  augmented_na$`Initiative_RGK Course - Data Management & Research Life Cycle` +
+  augmented_na$`Initiative_RGK Course - Program Evaluation for Nonprofit, Public, & Social Impact Initiatives` +
+  augmented_na$`Initiative_RGK Course - Social Impact Case Program`
 
-augmented_na$Good_Measure <- augmented_na$`Initiative_Good Measure - Data Leaders Academy` +
-                             augmented_na$`Initiative_Good Measure - Measuring What Matters` 
+augmented_na$Good_Measure <-
+  augmented_na$`Initiative_Good Measure - Data Leaders Academy` +
+  augmented_na$`Initiative_Good Measure - Measuring What Matters`
 
-augmented_na$Mission_Capital <- augmented_na$`Initiative_Mission Capital - Data Intelligence` +
-                             augmented_na$`Initiative_Mission Capital - Leadership Development` +
-                             augmented_na$`Initiative_Mission Capital - Smart Operations`
+augmented_na$Mission_Capital <-
+  augmented_na$`Initiative_Mission Capital - Data Intelligence` +
+  augmented_na$`Initiative_Mission Capital - Leadership Development` +
+  augmented_na$`Initiative_Mission Capital - Smart Operations`
 
-augmented_na <- dplyr::select(augmented_na, ORGANIZATION, `Initiative_Austin Together Fund`, `Initiative_Learn All the Time`, `Initiative_Mission Squared`,
-                              `Initiative_RGK CONNECT Program`, CONNECT_courses, Good_Measure, Mission_Capital)
+augmented_na <-
+  dplyr::select(
+    augmented_na,
+    ORGANIZATION,
+    `Initiative_Austin Together Fund`,
+    `Initiative_Learn All the Time`,
+    `Initiative_Mission Squared`,
+    `Initiative_RGK CONNECT Program`,
+    CONNECT_courses,
+    Good_Measure,
+    Mission_Capital
+  )
 
 
 augmented_na <- as.matrix(augmented_na)
 rownames(augmented_na) <- augmented_na[, 1]
-augmented_na <- augmented_na[, -1]
+augmented_na <- augmented_na[,-1]
 
 
-colnames(augmented_na) <- c("Austin Together Fund", "Learn All the Time","Mission Squared", "CONNECT Program", "CONNECT Courses", "Good Measure", "Mission Capital")
+colnames(augmented_na) <-
+  c(
+    "Austin Together Fund",
+    "Learn All the Time",
+    "Mission Squared",
+    "CONNECT Program",
+    "CONNECT Courses",
+    "Good Measure",
+    "Mission Capital"
+  )
+
+#Program Colors
+program_colors <- c("#efb306",
+                    "#eb990c",
+                    "#cd023d",
+                    "#852f88",
+                    "#4e54ac",
+                    "#0f8096",
+                    "#17a769")
+
+names(program_colors) <- c(
+  "CONNECT Program",
+  "CONNECT Courses",
+  "Mission Squared",
+  "Austin Together Fund",
+  "Learn All the Time",
+  "Mission Capital",
+  "Good Measure"
+)
+
+# number of nonprofits to display
+number_of_nonprofits <- 214
 
 ```
 
 
-```{r, ggraph}
+```{r, build_graph}
 # Create igraph object from adjacency matrix than convert to edges
 g <- graph_from_incidence_matrix(augmented_na, weighted = T)
+
+#Edges
 edges <- as.data.frame(get.edgelist(g))
-edges <- dplyr::rename(edges, From = V1, To = V2)
 
-vertices1 <- edges %>%
-  transmute(
-    node = From, Program = To, level = 1
+edges1 <-
+  edges %>% dplyr::rename(To = V1, From = V2) %>% mutate(Partnerships = 1) %>% dplyr::select(From, To, Partnerships)
+set.seed(27)
+rows <- sample(nrow(edges1))
+vertices1 <- edges1[rows, ]
+vertices1 <- distinct(vertices1, To, .keep_all = TRUE)
+main_edges <-
+  vertices1 %>%  mutate(Main = TRUE) %>% dplyr::select(From, To, Main)
+edges1 <-
+  edges1 %>% left_join(main_edges, by = c("From", "To")) %>% mutate(Main = replace_na(Main, FALSE))
+nonprofit_number <- count(edges1, "To")
+
+edges2 <-
+  edges1 %>% count("From") %>% dplyr::rename(To = From, Partnerships = freq) %>% mutate(From = "", Main = TRUE)
+
+edges <- dplyr::bind_rows(edges1, edges2)
+
+
+
+#Vertices
+
+vertices1 <-
+  vertices1 %>% dplyr::select(From, To) %>% left_join(nonprofit_number, by = "To") %>% transmute(
+    Node = To,
+    Program = From,
+    Partnerships = freq,
+    level = 1
   )
-vertices2 <- edges %>%
-  transmute(
-    node = To, Program = To, level = 2
-  )
 
-#Calculate the total number of connections
-program_count <- as.data.frame(table(edges$To))
-program_count <- program_count %>% dplyr::arrange(desc(Freq)) %>% dplyr::rename(Program = Var1, Connections = Freq)
+vertices2 <- edges2 %>%
+  transmute(Node = To,
+            Program = To,
+            Partnerships,
+            level = 2)
 
-#Program Colors
-program_colors <- c(
-  '#efb306',
-  '#eb990c',
-  '#cd023d',
-  '#852f88',
-  '#4e54ac',
-  '#0f8096',
-  '#17a769')
-
-names(program_colors) <- c(
-  'CONNECT',
-  'CONNECT Courses',
-  'Mission Squared',
-  'Austin Together Fund',
-  'Learn All the Time',
-  'Mission Capital',
-  'Good Measure'
+vertices3 <- tibble(
+  Node = '',
+  Program = NA,
+  Partnerships = 0,
+  level = 3
 )
 
+vertices <- bind_rows(vertices1, vertices2, vertices3) %>%
+  mutate(radius = Partnerships ** (1.8),
+         # scaling circles
+         Program = factor(Program, names(program_colors))) %>%
+  arrange(level, Program, Node)
 
-na_data <- as_tbl_graph(edges) %>% 
-    dplyr::mutate(Connectedness = centrality_degree(mode = 'in')) 
+#Several Programs actually participated in other capacity building organizations,
+#but I had to change their name because you can't have duplicate nodes.
+
+graph <- graph_from_data_frame(edges, vertices = vertices)
+
+```
 
 
-ggraph(na_data, layout = 'circle') + 
-    geom_edge_fan(aes(alpha = stat(index)), show.legend = FALSE) + 
-    geom_node_point(aes(size = Connectedness)) + 
-    theme_graph(foreground = 'steelblue', fg_text_colour = 'white')
+```{r, network_formatting}
 
+# create custom layout by updating existing circle layout
+layout <- create_layout(graph, layout = 'circle')
+
+
+outer_circle <- layout %>%
+  dplyr::filter(level == 1) %>%
+  dplyr::mutate(Program = factor(Program, names(program_colors))) %>%
+  dplyr::arrange(Program, desc(name)) %>%
+  dplyr::mutate(
+    x = cos((row_number() - 1) / number_of_nonprofits * 2 * pi),
+    y = sin((row_number() - 1) / number_of_nonprofits * 2 * pi)
+  )
+
+
+# positioning circle centers manually by specifying polar coords
+angles <- c(3, 43, 119, 160, 178, 255, 350, 0)
+radii <- c(0.8, 0.5, 0.6, 0.4, 0.65, 0.45, 0.6,0)
+centers <- tibble(
+  x = radii * cos(angles / 180 * pi),
+  y = radii * sin(angles / 180 * pi)
+)
+inner_circle <- bind_cols(centers, select(filter(layout, level != 1), -x, -y))
+
+layout[] <- dplyr::bind_rows(outer_circle, inner_circle) %>% 
+  dplyr::arrange(.ggraph.index)
+
+
+ggraph(layout) +
+  geom_edge_diagonal(
+    aes(edge_color = node1.Program, edge_alpha = as.factor(Main)),
+    edge_width = 0.3, show.legend = FALSE
+  ) +
+  geom_node_point(
+    aes(size = radius, color = Program),
+    alpha = 0.6, show.legend = FALSE
+  ) +
+  scale_edge_color_manual(values = program_colors) +
+  scale_color_manual(values = program_colors) +
+  scale_size_area(max_size = 150) +
+  scale_edge_alpha_manual(values = c(0.15, 1)) +
+  coord_fixed() +
+  labs(
+    title = 'Impact of Data Driven Capacity Building Organizations in Central Texas',
+    subtitle = '',
+    caption = ''
+  ) +
+  theme_void() +
+  theme(
+    text = element_text(family = 'Oswald'),
+    legend.position = c(0.645, 0.51),
+    plot.title = element_text(
+      face = 'bold', hjust = 0.5, size = 20, margin = margin(t = 45, b = 3)
+    ),
+    plot.subtitle = element_text(
+      face = 'plain', hjust = 0.5, size = 13, margin = margin(t = 5, b = 3)),
+    plot.caption = element_text(
+      face = 'plain', color = '#dedede', size = 8, hjust = 1,
+      margin = margin(b = 20)
+    )
+  )
+
+ggsave(
+  'images/nonprofit_network.png',
+  width = 12, height = 12.5, dpi = 500
+)
 ```
