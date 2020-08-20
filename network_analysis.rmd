@@ -31,7 +31,7 @@ augmented_na <-
 # Organization that participate in multiple programs have their rows added together.
 library(plyr)
 augmented_na <- ddply(augmented_na, "ORGANIZATION", numcolwise(sum))
-augmented_na$CONNECT_courses <-
+augmented_na$RGK_center <-
   augmented_na$`Initiative_RGK Course - Consulting for Social Impact` +
   augmented_na$`Initiative_RGK Course - Data Management & Research Life Cycle` +
   augmented_na$`Initiative_RGK Course - Program Evaluation for Nonprofit, Public, & Social Impact Initiatives` +
@@ -54,7 +54,7 @@ augmented_na <-
     `Initiative_Learn All the Time`,
     `Initiative_Mission Squared`,
     `Initiative_RGK CONNECT Program`,
-    CONNECT_courses,
+    RGK_center,
     Good_Measure,
     Mission_Capital
   )
@@ -71,14 +71,14 @@ colnames(augmented_na) <-
     "Learn All the Time",
     "Mission Squared",
     "CONNECT Program",
-    "CONNECT Courses",
+    "RGK Center",
     "Good Measure",
     "Mission Capital"
   )
 
 #Program Colors
 program_colors <- c("#efb306",
-                    "#eb990c",
+                    "#e8351e",
                     "#cd023d",
                     "#852f88",
                     "#4e54ac",
@@ -87,7 +87,7 @@ program_colors <- c("#efb306",
 
 names(program_colors) <- c(
   "CONNECT Program",
-  "CONNECT Courses",
+  "RGK Center",
   "Mission Squared",
   "Austin Together Fund",
   "Learn All the Time",
@@ -156,6 +156,8 @@ vertices <- bind_rows(vertices1, vertices2, vertices3) %>%
          Program = factor(Program, names(program_colors))) %>%
   arrange(level, Program, Node)
 
+top_programs <- as.character(unique(vertices$Program))
+
 #Several Programs actually participated in other capacity building organizations,
 #but I had to change their name because you can't have duplicate nodes.
 
@@ -165,6 +167,7 @@ graph <- graph_from_data_frame(edges, vertices = vertices)
 
 
 ```{r, network_formatting}
+windowsFonts(Georgia=windowsFont("Georgia"))
 
 # create custom layout by updating existing circle layout
 layout <- create_layout(graph, layout = 'circle')
@@ -181,8 +184,8 @@ outer_circle <- layout %>%
 
 
 # positioning circle centers manually by specifying polar coords
-angles <- c(3, 43, 119, 160, 178, 255, 350, 0)
-radii <- c(0.8, 0.5, 0.6, 0.4, 0.65, 0.45, 0.6,0)
+angles <- c(45, 100, 110, 118, 135, 190, 315, 0)
+radii <- c(0.65, 0.3, 0.6, 0.8, 0.65, 0.52, 0.45,0)
 centers <- tibble(
   x = radii * cos(angles / 180 * pi),
   y = radii * sin(angles / 180 * pi)
@@ -208,21 +211,53 @@ ggraph(layout) +
   scale_edge_alpha_manual(values = c(0.15, 1)) +
   coord_fixed() +
   labs(
-    title = 'Impact of Data Driven Capacity Building Organizations in Central Texas',
-    subtitle = '',
-    caption = ''
+    title = 'Data Capacity Building Organizations in Central Texas',
+    subtitle = 'and their Nonprofit Connections',
+    caption = 'Data provided by the RGK Center | Plot by Ethan Tenison'
+  ) +
+  #  geom_node_text(
+  #   aes(
+  #     x = 1.0175 * x,
+  #     y = 1.0175 * y,
+  #     label = name,
+  #     angle = -((-node_angle(x, y) + 90) %% 180) + 90,
+  #     filter = !(name %in% top_programs)
+  #   ),
+  #   size = 2, hjust = 'outward', family = 'Georgia'
+  # ) +
+  geom_node_text(
+    aes(
+      x = x,
+      y = y,
+      label = name,
+      filter = name %in% top_programs
+    ),
+    size = 6, hjust = 0.5, family = 'Georgia'
+  ) +
+  geom_node_text(
+    aes(
+      x = x,
+      y = y - 0.045,
+      label = ifelse(
+        Partnerships > 5,
+        format(Partnerships, big.mark = ','),
+        Partnerships
+      ),
+      filter = name %in% top_programs
+    ),
+    size = 5, hjust = 0.5, family = 'Georgia'
   ) +
   theme_void() +
   theme(
-    text = element_text(family = 'Oswald'),
+    text = element_text(family = 'Georgia'),
     legend.position = c(0.645, 0.51),
     plot.title = element_text(
       face = 'bold', hjust = 0.5, size = 20, margin = margin(t = 45, b = 3)
     ),
     plot.subtitle = element_text(
-      face = 'plain', hjust = 0.5, size = 13, margin = margin(t = 5, b = 3)),
+      face = 'plain', hjust = 0.5, size = 18, margin = margin(t = 5, b = 3)),
     plot.caption = element_text(
-      face = 'plain', color = '#dedede', size = 8, hjust = 1,
+      face = 'plain', color = '#000000', size = 10, hjust = 1,
       margin = margin(b = 20)
     )
   )
