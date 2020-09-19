@@ -184,7 +184,7 @@ outer_circle <- layout %>%
 
 
 # positioning circle centers manually by specifying polar coords
-angles <- c(45, 100, 110, 118, 135, 190, 315, 0)
+angles <- c(43, 100, 110, 118, 135, 190, 315, 0)
 radii <- c(0.65, 0.3, 0.6, 0.8, 0.65, 0.52, 0.45,0)
 centers <- tibble(
   x = radii * cos(angles / 180 * pi),
@@ -208,23 +208,40 @@ ggraph(layout) +
   scale_edge_color_manual(values = program_colors) +
   scale_color_manual(values = program_colors) +
   scale_size_area(max_size = 150) +
-  scale_edge_alpha_manual(values = c(0.15, 1)) +
+  scale_edge_alpha_manual(values = c(0.6, 1)) +
   coord_fixed() +
   labs(
     title = 'Data Capacity Building Organizations in Central Texas',
     subtitle = 'and their Nonprofit Connections',
     caption = 'Data provided by the RGK Center | Plot by Ethan Tenison'
   ) +
-  #  geom_node_text(
-  #   aes(
-  #     x = 1.0175 * x,
-  #     y = 1.0175 * y,
-  #     label = name,
-  #     angle = -((-node_angle(x, y) + 90) %% 180) + 90,
-  #     filter = !(name %in% top_programs)
-  #   ),
-  #   size = 2, hjust = 'outward', family = 'Georgia'
-  # ) +
+    geom_node_text(#American youthworks changed to youthworks, Texas Homeless Network to THN, Literacy Coalition of Central Texas changed to Literacy Coalition, Workforce Solutions - Capital Area Workforce Board changed to workforce solutions 
+     aes(
+       x = 1.0175 * x,
+       y = 1.0175 * y,
+       label = ifelse(
+         Partnerships > 2, 
+         name, 
+         ""),
+       angle = -((-node_angle(x, y) + 90) %% 180) + 90,
+       filter = !(name %in% top_programs)
+     ),
+     size = 3, hjust = 'outward', family = 'Georgia'
+   ) +
+  geom_node_text(
+    aes(
+      x = x,
+      y = y ,
+      label = ifelse(
+        Partnerships > 2,
+        format(Partnerships, big.mark = ','),
+        ""
+      ),
+      angle = -((-node_angle(x, y) + 90) %% 180) + 90,
+      filter = !(name %in% top_programs)
+    ),
+    size = 3, hjust = 0.5, family = 'Georgia'
+  ) +
   geom_node_text(
     aes(
       x = x,
@@ -259,7 +276,8 @@ ggraph(layout) +
     plot.caption = element_text(
       face = 'plain', color = '#000000', size = 10, hjust = 1,
       margin = margin(b = 20)
-    )
+    ),
+     plot.margin = margin(0, 0, 0, 0)
   )
 
 ggsave(
