@@ -15,7 +15,7 @@ library(dummies)
 library(dplyr)
 library(ggraph)
 library(tidygraph)
-set.seed(27)
+set.seed(34)
 
 
 augmented_na <-
@@ -77,7 +77,7 @@ colnames(augmented_na) <-
   )
 
 #Program Colors
-program_colors <- c("#efb306",
+program_colors <- c("#efb346",
                     "#e8351e",
                     "#cd023d",
                     "#852f88",
@@ -103,14 +103,27 @@ number_of_nonprofits <- 214
 
 ```{r, build_graph}
 # Create igraph object from adjacency matrix than convert to edges
+set.seed(34)
 g <- graph_from_incidence_matrix(augmented_na, weighted = T)
+
+names <- V(g)$name
+de <- degree(g)
+st <- graph.strength(g)
+be <- betweenness(g, normalized = T)
+cl <- closeness(g, mode="all")
+
+
+# assemble dataset
+d <- data.frame(node.name = names, degree = de, strength = st, betweenness = be, closeness=cl)
+rownames(d) <- NULL
+write.csv(d, "data/centrality.csv")
 
 #Edges
 edges <- as.data.frame(get.edgelist(g))
 
 edges1 <-
   edges %>% dplyr::rename(To = V1, From = V2) %>% mutate(Partnerships = 1) %>% dplyr::select(From, To, Partnerships)
-set.seed(27)
+set.seed(34)
 rows <- sample(nrow(edges1))
 vertices1 <- edges1[rows, ]
 vertices1 <- distinct(vertices1, To, .keep_all = TRUE)
@@ -136,6 +149,12 @@ vertices1 <-
     Partnerships = freq,
     level = 1
   )
+
+vertices1$Program[vertices1$Node == "Learn All The Time"] <- "Austin Together Fund"
+vertices1$Program[vertices1$Node == "YouthWorks"] <- "Mission Capital"
+vertices1$Program[vertices1$Node == "Capital IDEA"] <- "Good Measure"
+vertices1$Program[vertices1$Node == "WFS"] <- "Mission Squared"
+vertices1$Program[vertices1$Node == "THN"] <- "RGK Center"
 
 vertices2 <- edges2 %>%
   transmute(Node = To,
@@ -167,6 +186,7 @@ graph <- graph_from_data_frame(edges, vertices = vertices)
 
 
 ```{r, network_formatting}
+set.seed(34)
 windowsFonts(Georgia=windowsFont("Georgia"))
 
 # create custom layout by updating existing circle layout
@@ -184,7 +204,7 @@ outer_circle <- layout %>%
 
 
 # positioning circle centers manually by specifying polar coords
-angles <- c(43, 100, 110, 118, 135, 190, 315, 0)
+angles <- c(43, 100, 110, 115, 135, 190, 315, 0)
 radii <- c(0.65, 0.3, 0.6, 0.8, 0.65, 0.52, 0.45,0)
 centers <- tibble(
   x = radii * cos(angles / 180 * pi),
@@ -192,8 +212,22 @@ centers <- tibble(
 )
 inner_circle <- bind_cols(centers, select(filter(layout, level != 1), -x, -y))
 
-layout[] <- dplyr::bind_rows(outer_circle, inner_circle) %>% 
-  dplyr::arrange(.ggraph.index)
+
+layout[] <- dplyr::bind_rows(outer_circle, inner_circle) 
+layout$x[layout$name == "Capital IDEA"] <- 0.68068502
+layout$y[layout$name == "Capital IDEA"] <- -7.325762e-01
+layout$x[layout$name == "Health Alliance for Austin Musicians"] <- 0.97254101
+layout$y[layout$name == "Health Alliance for Austin Musicians"] <- -2.327316e-01
+layout$x[layout$name == "Literacy Coalition"] <- 0.68068502
+layout$y[layout$name == "Capital IDEA"] <- -7.325762e-01
+
+layout$x[layout$name == "YouthWorks"] <- -0.65888581
+layout$y[layout$name == "YouthWorks"] <- -7.522430e-01
+layout$x[layout$name == "Any Baby Can"] <- -0.96528968
+layout$y[layout$name == "Any Baby Can"] <- 2.611816e-01
+layout <- dplyr::arrange(layout, .ggraph.index)
+
+
 
 
 ggraph(layout) +
@@ -212,10 +246,9 @@ ggraph(layout) +
   coord_fixed() +
   labs(
     title = 'Data Capacity Building Organizations in Central Texas',
-    subtitle = 'and their Nonprofit Connections',
-    caption = 'Data provided by the RGK Center | Plot by Ethan Tenison'
+    subtitle = 'and their Nonprofit Connections'
   ) +
-    geom_node_text(#American youthworks changed to youthworks, Texas Homeless Network to THN, Literacy Coalition of Central Texas changed to Literacy Coalition, Workforce Solutions - Capital Area Workforce Board changed to workforce solutions 
+    geom_node_text(#American youthworks changed to youthworks, Texas Homeless Network to THN, Literacy Coalition of Central Texas changed to Literacy Coalition, Workforce Solutions - Capital Area Workforce Board changed to wfs, Learn All the Time == LATT 
      aes(
        x = 1.0175 * x,
        y = 1.0175 * y,
@@ -226,7 +259,7 @@ ggraph(layout) +
        angle = -((-node_angle(x, y) + 90) %% 180) + 90,
        filter = !(name %in% top_programs)
      ),
-     size = 3, hjust = 'outward', family = 'Georgia'
+     size = 4, hjust = 'outward', family = 'Georgia'
    ) +
   geom_node_text(
     aes(
@@ -240,7 +273,7 @@ ggraph(layout) +
       angle = -((-node_angle(x, y) + 90) %% 180) + 90,
       filter = !(name %in% top_programs)
     ),
-    size = 3, hjust = 0.5, family = 'Georgia'
+    size = 4, hjust = 0.5, family = 'Georgia'
   ) +
   geom_node_text(
     aes(
@@ -273,11 +306,7 @@ ggraph(layout) +
     ),
     plot.subtitle = element_text(
       face = 'plain', hjust = 0.5, size = 18, margin = margin(t = 5, b = 3)),
-    plot.caption = element_text(
-      face = 'plain', color = '#000000', size = 10, hjust = 1,
-      margin = margin(b = 20)
-    ),
-     plot.margin = margin(0, 0, 0, 0)
+    plot.margin = margin(0,0,0,0)
   )
 
 ggsave(

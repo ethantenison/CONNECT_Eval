@@ -55,6 +55,7 @@ student_surveys <- clean_names(student_surveys)
 
 # Adding skip a line to titles
 student_survey_title <- list(
+  "",
   "In which program(s) are you a participant?",
   "How much do you believe that you improved in \nworking with clients in an independent capacity?",
   "How much do you believe that you improved in \ngiving a client real-time feedback?",
@@ -69,7 +70,7 @@ student_survey_title <- list(
   "To what extent did your experience meet your expectations \nfor the program and/or course?",
   "How supported did you feel by the program \ncoordinator(s) and/or instructor in addressing challenges \nor roadblocks in your client project?",
   "Are you willing to share your experience in the \nprogram and/or course for marketing or student \nrecruitment purposes in the future?",
-  "cohort"
+  "Cohort"
 )
 
 # Created ordered factors
@@ -161,16 +162,39 @@ student_surveys$`how_supported_did_you_feel_by_the_program_coordinator_s_and_or_
 )
 # GGPLOTS
 
+student_surveys <- na.omit(student_surveys)
 for (i in 1:ncol(student_surveys)) {
   print(
-    ggplot(student_surveys, aes(x = student_surveys[[i]])) +
-      geom_histogram(stat = "count", fill = "lightblue") +
+    ggplot(student_surveys, aes(x = student_surveys[[i]], fill = student_surveys[[i]])) +
+      geom_histogram(stat = "count") +
       theme(
-        plot.title = element_text(size = 12, face = "bold", hjust = 0.5),
+        plot.title = element_text(
+          size = 12,
+          face = "bold",
+          hjust = 0.5
+        ),
+        panel.background = element_blank(),
+        axis.line = element_line(colour = "black"),
+        legend.title = element_blank(),
         axis.title.x = element_blank()
       ) +
+      scale_fill_manual(values = rep_len(
+                   c(
+                     "#efb306",
+                     "#e8351e",
+                     "#cd023d",
+                     "#852f88",
+                     "#4e54ac",
+                     "#0f8096",
+                     "#17a769"
+                   ),
+                   nrow(student_surveys)
+                 ))+
+      ylab("Count")+
       ggtitle(student_survey_title[i])
   )
+  filename = paste("images/student_surveys/", i, ".png", sep = "")
+  ggsave(filename, dpi = 300)
 }
 ```
 
@@ -179,13 +203,15 @@ for (i in 1:ncol(student_surveys)) {
 
 ```{r what_aspects,echo=FALSE, message =FALSE, warning = FALSE}
 
+
 library(wordcloud)
 library(RColorBrewer)
 library(tm) # to create corpus
 library(wordcloud2)
 
 # Create a vector containing only the text
-text <- pre_standarize$`What aspect(s) of the program/course were most helpful to you in achieving your learning goals?`
+text <-
+  pre_standarize$`What aspect(s) of the program/course were most helpful to you in achieving your learning goals?`
 
 # Create a corpus
 docs <- Corpus(VectorSource(text))
@@ -204,7 +230,21 @@ matrix <- as.matrix(dtm)
 words <- sort(rowSums(matrix), decreasing = TRUE)
 df <- data.frame(word = names(words), freq = words)
 df$word <- as.character(df$word)
-target <- c("also", "project", "really", "helpful", "able", "helped", "felt", "wasnt", "etc", "asks", "move", "gave")
+target <-
+  c(
+    "also",
+    "project",
+    "really",
+    "helpful",
+    "able",
+    "helped",
+    "felt",
+    "wasnt",
+    "etc",
+    "asks",
+    "move",
+    "gave"
+  )
 "%ni%" <- Negate("%in%")
 df <- filter(df, word %ni% target)
 df$word <- as.factor(df$word)
@@ -212,13 +252,32 @@ df$word <- as.factor(df$word)
 
 
 set.seed(27)
+# or a vector of colors. vector must be same length than input data
+#wordcloud2(demoFreq, size=1.6, color=rep_len( c("green","blue"), nrow(demoFreq) ) )
 
-# wordcloud(words = df$word, freq = df$freq, min.freq = 1,max.words=200, random.order=FALSE, rot.per=0.35, colors=brewer.pal(8, "Dark2"))
-
-w1 <- wordcloud2(data = df, color = "random-dark", shuffle = FALSE)
+w1 <- wordcloud2(data = df,
+                 color = rep_len(
+                   c(
+                     "#efb306",
+                     "#e8351e",
+                     "#cd023d",
+                     "#852f88",
+                     "#4e54ac",
+                     "#0f8096",
+                     "#17a769"
+                   ),
+                   nrow(df)
+                 ),
+                 shuffle = FALSE)
 
 saveWidget(w1, "1.html", selfcontained = F)
-webshot("1.html", "1.png", vwidth = 700, vheight = 500, delay = 5)
+webshot(
+  "1.html",
+  "1.png",
+  vwidth = 700,
+  vheight = 500,
+  delay = 5
+)
 ```
 
 
@@ -226,31 +285,49 @@ webshot("1.html", "1.png", vwidth = 700, vheight = 500, delay = 5)
 
 ```{r organization_survey, echo=FALSE, message =FALSE, warning = FALSE}
 # Reading Organization Surveys
-organization_survey_spring_2019 <- read_csv("data/Organization Survey_Spring 2019.csv")
-organization_survey_spring_2019 <- mutate(organization_survey_spring_2019, cohort = "Spring 2019")
-organization_survey_summer_2019 <- read_csv("data/Organization Survey_Summer 2019.csv")
-organization_survey_summer_2019 <- mutate(organization_survey_summer_2019, cohort = "Summer 2019")
-organization_survey_fall_2019 <- read_csv("data/Organization Survey_Fall 2019.csv")
-organization_survey_fall_2019 <- mutate(organization_survey_fall_2019, cohort = "Fall 2019")
-organization_survey_spring_2020 <- read_csv("data/Organization Survey_Spring 2020.csv")
-organization_survey_spring_2020 <- mutate(organization_survey_spring_2019, cohort = "Spring 2020")
-organization_surveys <- bind_rows(organization_survey_spring_2019, organization_survey_summer_2019, organization_survey_fall_2019, organization_survey_spring_2020)
+organization_survey_spring_2019 <-
+  read_csv("data/Organization Survey_Spring 2019.csv")
+organization_survey_spring_2019 <-
+  mutate(organization_survey_spring_2019, cohort = "Spring 2019")
+organization_survey_summer_2019 <-
+  read_csv("data/Organization Survey_Summer 2019.csv")
+organization_survey_summer_2019 <-
+  mutate(organization_survey_summer_2019, cohort = "Summer 2019")
+organization_survey_fall_2019 <-
+  read_csv("data/Organization Survey_Fall 2019.csv")
+organization_survey_fall_2019 <-
+  mutate(organization_survey_fall_2019, cohort = "Fall 2019")
+organization_survey_spring_2020 <-
+  read_csv("data/Organization Survey_Spring 2020.csv")
+organization_survey_spring_2020 <-
+  mutate(organization_survey_spring_2019, cohort = "Spring 2020")
+organization_surveys <-
+  bind_rows(
+    organization_survey_spring_2019,
+    organization_survey_summer_2019,
+    organization_survey_fall_2019,
+    organization_survey_spring_2020
+  )
 
 prestandardize <- organization_surveys
 
 
 # These questions need to be removed from the histograms because there are too many answers
-organization_surveys <- select(organization_surveys, -c(
-  "Please describe how you intend to use or build upon the work done by your consultant(s) (if at all).",
-  "What did you and/or your organization learn from your participation in this program/course?",
-  "What suggestions for improvement do you have for future iterations of this program or course?",
-  "What is one piece of advice that you would like to give to your consultant(s) to be more effective and impactful in the future?",
-  "Is there anything else that you would like to share about your experience? (Optional)",
-  "If you answered \"Maybe\" or \"No\" to the previous question, please explain."
-))
+organization_surveys <- select(
+  organization_surveys,
+  -c(
+    "Please describe how you intend to use or build upon the work done by your consultant(s) (if at all).",
+    "What did you and/or your organization learn from your participation in this program/course?",
+    "What suggestions for improvement do you have for future iterations of this program or course?",
+    "What is one piece of advice that you would like to give to your consultant(s) to be more effective and impactful in the future?",
+    "Is there anything else that you would like to share about your experience? (Optional)",
+    "If you answered \"Maybe\" or \"No\" to the previous question, please explain."
+  )
+)
 
 # Survey Titles
 organization_survey_titles <- list(
+  "",
   "In which program did you participate?",
   "To what extent did your experience meet your \nexpectations for the program and/or course?",
   "How useful was this experience for you or your organization?",
@@ -269,80 +346,155 @@ organization_survey_titles <- list(
 organization_surveys <- clean_names(organization_surveys)
 
 # Created ordered factors
-organization_surveys$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course <- factor(
-  organization_surveys$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course,
-  levels =
-    c("Equals expectations", "Exceeds expectations", "Far exceeds expectations"),
-  exclude = NULL,
-  ordered = TRUE
-)
+organization_surveys$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course <-
+  factor(
+    organization_surveys$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course,
+    levels =
+      c(
+        "Equals expectations",
+        "Exceeds expectations",
+        "Far exceeds expectations"
+      ),
+    exclude = NULL,
+    ordered = TRUE
+  )
 
-organization_surveys$how_useful_was_this_experience_for_you_or_your_organization <- factor(
-  organization_surveys$how_useful_was_this_experience_for_you_or_your_organization,
-  levels =
-    c("Slightly useful", "Moderately useful", "Very useful", "Extremely useful"),
-  exclude = NULL,
-  ordered = TRUE
-)
+organization_surveys$how_useful_was_this_experience_for_you_or_your_organization <-
+  factor(
+    organization_surveys$how_useful_was_this_experience_for_you_or_your_organization,
+    levels =
+      c(
+        "Slightly useful",
+        "Moderately useful",
+        "Very useful",
+        "Extremely useful"
+      ),
+    exclude = NULL,
+    ordered = TRUE
+  )
 
-organization_surveys$how_satisfied_are_you_with_the_relationship_with_your_consultant_s <- factor(
-  organization_surveys$how_satisfied_are_you_with_the_relationship_with_your_consultant_s,
-  levels =
-    c("Slightly satisfied", "Moderately satisfied", "Very satisfied", "Extremely satisfied"),
-  exclude = NULL,
-  ordered = TRUE
-)
+organization_surveys$how_satisfied_are_you_with_the_relationship_with_your_consultant_s <-
+  factor(
+    organization_surveys$how_satisfied_are_you_with_the_relationship_with_your_consultant_s,
+    levels =
+      c(
+        "Slightly satisfied",
+        "Moderately satisfied",
+        "Very satisfied",
+        "Extremely satisfied"
+      ),
+    exclude = NULL,
+    ordered = TRUE
+  )
 
-organization_surveys$how_would_you_rate_the_time_commitment_and_resources_required_of_you_during_this_program_course <- factor(
-  organization_surveys$how_would_you_rate_the_time_commitment_and_resources_required_of_you_during_this_program_course,
-  levels =
-    c("Slightly too little", "About right", "Slightly too much"),
-  exclude = NULL,
-  ordered = TRUE
-)
-organization_surveys$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish <- factor(
-  organization_surveys$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish,
-  levels =
-    c("Not effective at all", "Slightly effective", "Moderately effective", "Very effective", "Extremely effective"),
-  exclude = NULL,
-  ordered = TRUE
-)
-organization_surveys$how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization <- factor(
-  organization_surveys$how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization,
-  levels =
-    c("Not effective at all", "Slightly effective", "Moderately effective", "Very effective", "Extremely effective"),
-  exclude = NULL,
-  ordered = TRUE
-)
-organization_surveys$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization <- factor(
-  organization_surveys$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization,
-  levels =
-    c("Not effective at all", "Slightly effective", "Moderately effective", "Very effective", "Extremely effective"),
-  exclude = NULL,
-  ordered = TRUE
-)
-organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization <- factor(
-  organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization,
-  levels =
-    c("Not effective at all", "Slightly effective", "Moderately effective", "Very effective", "Extremely effective"),
-  exclude = NULL,
-  ordered = TRUE
-)
+organization_surveys$how_would_you_rate_the_time_commitment_and_resources_required_of_you_during_this_program_course <-
+  factor(
+    organization_surveys$how_would_you_rate_the_time_commitment_and_resources_required_of_you_during_this_program_course,
+    levels =
+      c("Slightly too little", "About right", "Slightly too much"),
+    exclude = NULL,
+    ordered = TRUE
+  )
+organization_surveys$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish <-
+  factor(
+    organization_surveys$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish,
+    levels =
+      c(
+        "Not effective at all",
+        "Slightly effective",
+        "Moderately effective",
+        "Very effective",
+        "Extremely effective"
+      ),
+    exclude = NULL,
+    ordered = TRUE
+  )
+organization_surveys$how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization <-
+  factor(
+    organization_surveys$how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization,
+    levels =
+      c(
+        "Not effective at all",
+        "Slightly effective",
+        "Moderately effective",
+        "Very effective",
+        "Extremely effective"
+      ),
+    exclude = NULL,
+    ordered = TRUE
+  )
+organization_surveys$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization <-
+  factor(
+    organization_surveys$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization,
+    levels =
+      c(
+        "Not effective at all",
+        "Slightly effective",
+        "Moderately effective",
+        "Very effective",
+        "Extremely effective"
+      ),
+    exclude = NULL,
+    ordered = TRUE
+  )
+organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization <-
+  factor(
+    organization_surveys$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization,
+    levels =
+      c(
+        "Not effective at all",
+        "Slightly effective",
+        "Moderately effective",
+        "Very effective",
+        "Extremely effective"
+      ),
+    exclude = NULL,
+    ordered = TRUE
+  )
 
 
-
+organization_surveys <- na.omit(organization_surveys)
 # GGPLOTS
 for (i in 1:ncol(organization_surveys)) {
+  theme_set(theme_bw())
   print(
-    ggplot(organization_surveys, aes(x = organization_surveys[[i]])) +
-      geom_histogram(stat = "count", fill = "lightblue") +
+    ggplot(
+      organization_surveys,
+      aes(x = organization_surveys[[i]], fill = organization_surveys[[i]])
+    ) +
+      geom_histogram(stat = "count") +
       theme(
-        plot.title = element_text(size = 12, face = "bold", hjust = 0.5),
+        plot.title = element_text(
+          size = 12,
+          face = "bold",
+          hjust = 0.5
+        ),
+        panel.background = element_blank(),
+        axis.line = element_line(colour = "black"),
+        legend.title = element_blank(),
         axis.title.x = element_blank()
       ) +
+      scale_fill_manual(values = rep_len(
+        c(
+          "#efb306",
+          "#e8351e",
+          "#cd023d",
+          "#852f88",
+          "#4e54ac",
+          "#0f8096",
+          "#17a769"
+        ),
+        nrow(student_surveys)
+      )) +
+      ylab("Count") +
       ggtitle(organization_survey_titles[i])
   )
+  filename = paste("images/organization_surveys/", i, ".png", sep = "")
+  ggsave(filename, dpi = 300)
 }
+
+
+
 ```
 
 
@@ -351,7 +503,8 @@ for (i in 1:ncol(organization_surveys)) {
 ```{r org_word_Cloud2, echo=FALSE, message =FALSE, warning = FALSE}
 library(widgetframe)
 # Create a vector containing only the text
-text <- prestandardize$`Please describe how you intend to use or build upon the work done by your consultant(s) (if at all).`
+text <-
+  prestandardize$`Please describe how you intend to use or build upon the work done by your consultant(s) (if at all).`
 
 # Create a corpus
 docs <- Corpus(VectorSource(text))
@@ -370,7 +523,8 @@ matrix <- as.matrix(dtm)
 words <- sort(rowSums(matrix), decreasing = TRUE)
 df <- data.frame(word = names(words), freq = words)
 df$word <- as.character(df$word)
-target <- c("also", "project", "really", "will", "work", "use", "program")
+target <-
+  c("also", "project", "really", "will", "work", "use", "program")
 "%ni%" <- Negate("%in%")
 df <- filter(df, word %ni% target)
 df$word <- as.factor(df$word)
@@ -381,18 +535,39 @@ set.seed(27)
 
 # wordcloud(words = df$word, freq = df$freq, min.freq = 1,max.words=200, random.order=FALSE, rot.per=0.1, colors=brewer.pal(8, "Dark2"))
 
-w2 <- wordcloud2(data = df, color = "random-dark", shuffle = FALSE)
+w2 <- wordcloud2(data = df,
+                 color = rep_len(
+                   c(
+                     "#efb306",
+                     "#e8351e",
+                     "#cd023d",
+                     "#852f88",
+                     "#4e54ac",
+                     "#0f8096",
+                     "#17a769"
+                   ),
+                   nrow(df)
+                 ),
+                 shuffle = FALSE)
 saveWidget(w2, "2.html", selfcontained = F)
-webshot("2.html", "2.png", vwidth = 700, vheight = 500, delay = 5)
+webshot(
+  "2.html",
+  "2.png",
+  vwidth = 700,
+  vheight = 500,
+  delay = 5
+)
 ```
 
 
 ## "What suggestions for improvement do you have for future iterations of this program or course?"
 
-```{r org_word_Cloud3, echo=FALSE, message =FALSE, warning = FALSE}
+```{r org_word_Cloud3, echo=FALSE, message=FALSE, warning=FALSE}
+
 
 # Create a vector containing only the text
-text <- prestandardize$`What suggestions for improvement do you have for future iterations of this program or course?`
+text <-
+  prestandardize$`What suggestions for improvement do you have for future iterations of this program or course?`
 
 # Create a corpus
 docs <- Corpus(VectorSource(text))
@@ -423,17 +598,41 @@ set.seed(27)
 
 # wordcloud(words = df$word, freq = df$freq, min.freq = 1,max.words=200, random.order=FALSE, rot.per=0.1, colors=brewer.pal(8, "Dark2"))
 
-w3 <- wordcloud2(data = df, size = 1.6, color = "random-dark", shuffle = FALSE)
+w3 <- wordcloud2(
+  data = df,
+  size = 1.6,
+  color = rep_len(
+    c(
+      "#efb306",
+      "#e8351e",
+      "#cd023d",
+      "#852f88",
+      "#4e54ac",
+      "#0f8096",
+      "#17a769"
+    ),
+    nrow(df)
+  ),
+  shuffle = FALSE
+)
 saveWidget(w3, "3.html", selfcontained = F)
-webshot("3.html", "3.png", vwidth = 700, vheight = 500, delay = 5)
+webshot(
+  "3.html",
+  "3.png",
+  vwidth = 700,
+  vheight = 500,
+  delay = 5
+)
 ```
 
 ## "Is there anything else that you would like to share about your experience? (Optional)"
 
 ```{r org_word_Cloud4, echo=FALSE, message =FALSE, warning = FALSE}
 
+
 # Create a vector containing only the text
-text <- prestandardize$`Is there anything else that you would like to share about your experience? (Optional)`
+text <-
+  prestandardize$`Is there anything else that you would like to share about your experience? (Optional)`
 
 # Create a corpus
 docs <- Corpus(VectorSource(text))
@@ -463,9 +662,31 @@ set.seed(27)
 
 
 # wordcloud(words = df$word, freq = df$freq, min.freq = 1,max.words=200, random.order=FALSE, rot.per=0.1, colors=brewer.pal(8, "Dark2"))
-w4 <- wordcloud2(data = df, size = 1.6, color = "random-dark", shuffle = FALSE)
+w4 <- wordcloud2(
+  data = df,
+  size = 1.6,
+  color = rep_len(
+    c(
+      "#efb306",
+      "#e8351e",
+      "#cd023d",
+      "#852f88",
+      "#4e54ac",
+      "#0f8096",
+      "#17a769"
+    ),
+    nrow(df)
+  ),
+  shuffle = FALSE
+)
 saveWidget(w4, "4.html", selfcontained = F)
-webshot("4.html", "4.png", vwidth = 700, vheight = 500, delay = 5)
+webshot(
+  "4.html",
+  "4.png",
+  vwidth = 700,
+  vheight = 500,
+  delay = 5
+)
 ```
 
 ## CONNECT Program Sectors
@@ -489,12 +710,20 @@ p <- ggplot(sectors, aes(x = Sector, fill = Sector)) +
     axis.text.x = element_blank(),
     axis.text.y = element_text()
   ) +
+  scale_fill_manual(values = c(
+                     "#efb306",
+                     "#e8351e",
+                     "#cd023d",
+                     "#852f88",
+                     "#4e54ac",
+                     "#0f8096",
+                     "#17a769"))+
   labs(fill = "Nonprofit Sector", y = "Number of Projects") +
   ggtitle("CONNECT Project Sectors")
 
 p
 
-ggsave("project_sectors.png", dpi = 500)
+ggsave("images/project_sectors.png", dpi = 500)
 ```
 
 ## Connect Project Types 
@@ -518,12 +747,20 @@ p <- ggplot(project_type, aes(x = `Project Category (primary)`, fill = `Project 
     axis.text.x = element_blank(),
     axis.text.y = element_text()
   ) +
+  scale_fill_manual(values = c(
+                     "#efb306",
+                     "#e8351e",
+                     "#cd023d",
+                     "#852f88",
+                     "#4e54ac",
+                     "#0f8096",
+                     "#17a769"))+
   ggtitle("CONNECT Project Types") +
   labs(fill = "Project Categories", y = "Number of Projects")
 
 p
 
-ggsave("project_type.png", dpi = 500)
+ggsave("images/project_type.png", dpi = 500)
 ```
 
 # Do nonprofits that pay a percentage of the budget have better reviews? 
@@ -1548,71 +1785,3 @@ for (layout in layouts) {
 }
 ```
 
-```{r, na_ggraph}
-
-
-library(readr)
-library(caret)
-library(readxl)
-library(igraph)
-library(mltools)
-library(dummies)
-library(dplyr)
-library(ggraph)
-library(tidygraph)
-set.seed(27)
-
-
-augmented_na <- read_csv("data/augmented_networkanalysis_summer2020.csv")
-augmented_na$Initiative <- as.factor(augmented_na$Initiative)
-augmented_na <- as.data.frame(augmented_na)
-
-# Hot coding the organization variable and creating a
-augmented_na <- dummy.data.frame(augmented_na, names = c("Initiative"), sep = "_")
-
-
-# Organization that participate in multiple programs have their rows added together.
-library(plyr)
-augmented_na <- ddply(augmented_na, "ORGANIZATION", numcolwise(sum))
-augmented_na$CONNECT_courses <- augmented_na$`Initiative_RGK Course - Consulting for Social Impact` +
-                                augmented_na$`Initiative_RGK Course - Data Management & Research Life Cycle` +
-                                augmented_na$`Initiative_RGK Course - Program Evaluation for Nonprofit, Public, & Social Impact Initiatives`+
-                                augmented_na$`Initiative_RGK Course - Social Impact Case Program`
-
-augmented_na$Good_Measure <- augmented_na$`Initiative_Good Measure - Data Leaders Academy` +
-                             augmented_na$`Initiative_Good Measure - Measuring What Matters` 
-
-augmented_na$Mission_Capital <- augmented_na$`Initiative_Mission Capital - Data Intelligence` +
-                             augmented_na$`Initiative_Mission Capital - Leadership Development` +
-                             augmented_na$`Initiative_Mission Capital - Smart Operations`
-
-augmented_na <- dplyr::select(augmented_na, ORGANIZATION, `Initiative_Austin Together Fund`, `Initiative_Learn All the Time`, `Initiative_Mission Squared`,
-                              `Initiative_RGK CONNECT Program`, CONNECT_courses, Good_Measure, Mission_Capital)
-
-
-augmented_na <- as.matrix(augmented_na)
-rownames(augmented_na) <- augmented_na[, 1]
-augmented_na <- augmented_na[, -1]
-
-
-colnames(augmented_na) <- c("Austin Together Fund", "Learn All the Time","Mission Squared", "CONNECT Program", "CONNECT Courses", "Good Measure", "Mission Capital")
-
-
-# Create igraph object from adjacency matrix
-g <- graph_from_incidence_matrix(augmented_na, weighted = T)
-
-edges <- get.edgelist(g)
-
-na_data <- as_tbl_graph(edges) %>% 
-    dplyr::mutate(Connectedness = centrality_degree(mode = 'in')) 
-
-
-ggraph(na_data, layout = 'circle') + 
-    geom_edge_fan(aes(alpha = stat(index)), show.legend = FALSE) + 
-    geom_node_point(aes(size = Connectedness)) + 
-    theme_graph(foreground = 'steelblue', fg_text_colour = 'white')
-# ggraph(g, layout= "gem") +
-#   geom_edge_link0(alpha = 0.3) +
-#   geom_node_point(aes(color = "pink"))
-
-```
