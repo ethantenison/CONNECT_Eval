@@ -1,0 +1,270 @@
+---
+title: "Fall 2020 Cohort"
+author: "Ethan"
+date: "2/24/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+
+library(readr)
+library(janitor)
+library(tidyverse)
+library(extrafont)
+loadfonts()
+```
+
+## CONNECT Fall 2020 Cohort Evaluation
+
+Loading in the data
+
+```{r data, message=FALSE, warning=FALSE}
+
+
+setwd("C:/Users/tenis/Desktop/Data_Projects/CONNECT_Eval")
+
+raw_students <- read_csv("data/raw/13.Student Final Survey - Fall 2020_February 24, 2021_16.16.csv")
+
+raw_students <- raw_students[, -c(1:20)]
+raw_students <- raw_students %>% row_to_names(row_number = 1)
+raw_students <- tail(raw_students, -1)
+raw_students <- raw_students[-2,]
+
+
+```
+
+Creating the charts for students
+
+```{r student_cleaning, message=FALSE, warning=FALSE}
+
+student_title <- colnames(raw_students)
+students <- clean_names(raw_students)
+students[is.na(students)] <- ""
+
+students$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[students$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course == "Far exceeds expectations"] <- "Far exceeds\n expectations"
+
+students$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[students$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course == "Exceeds expectations"] <- "Exceeds\n expectations"
+
+students$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[students$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course == "Equals expectations"] <- "Equals\n expectations"
+
+students$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[students$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course == "Short of expectations"] <- "Short of\n expectations"
+
+students$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[students$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course == "Far short of expectation"] <- "Far short of\n expectation"
+
+# Created ordered factors
+students$`how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity` <- factor(
+  students$`how_much_do_you_believe_that_you_improved_in_working_with_clients_in_an_independent_capacity`,
+  levels =
+    c("None at all", "A little", "A moderate amount", "A lot", "A great deal"),
+  exclude = NULL,
+  ordered = TRUE
+)
+
+students$`how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback` <- factor(
+  students$`how_much_do_you_believe_that_you_improved_in_giving_a_client_real_time_feedback`,
+  levels =
+    c("None at all", "A little", "A moderate amount", "A lot", "A great deal"),
+  exclude = NULL,
+  ordered = TRUE
+)
+
+students$`how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients` <- factor(
+  students$`how_much_do_you_believe_that_you_improved_in_planning_and_facilitating_meetings_with_clients`,
+  levels =
+    c("None at all", "A little", "A moderate amount", "A lot", "A great deal"),
+  exclude = NULL,
+  ordered = TRUE
+)
+
+students$`how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client` <- factor(
+  students$`how_much_do_you_believe_that_you_improved_in_leading_and_managing_a_project_from_start_to_finish_with_little_guidance_from_your_client`,
+  levels =
+    c("None at all", "A little", "A moderate amount", "A lot", "A great deal"),
+  exclude = NULL,
+  ordered = TRUE
+)
+
+students$`how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support` <- factor(
+  students$`how_much_do_you_believe_that_you_improved_in_designing_clear_and_compelling_solutions_when_provided_with_ambiguous_information_and_support`,
+  levels =
+    c("None at all", "A little", "A moderate amount", "A lot", "A great deal"),
+  exclude = NULL,
+  ordered = TRUE
+)
+
+students$`how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner` <- factor(
+  students$`how_much_do_you_believe_that_you_improved_in_synthesizing_and_presenting_written_and_verbal_complex_information_to_clients_in_an_accessible_and_actionable_manner`,
+  levels =
+    c("None at all", "A little", "A moderate amount", "A lot", "A great deal"),
+  exclude = NULL,
+  ordered = TRUE
+)
+students$`how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization` <- factor(
+  students$`how_useful_do_you_believe_your_project_and_final_deliverable_was_to_your_client_organization`,
+  levels =
+    c("Not at all useful", "Slightly useful", "Moderately useful", "Very useful", "Extremely useful"),
+  exclude = NULL,
+  ordered = TRUE
+)
+
+students$`how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables` <- factor(
+  students$`how_clear_were_expectations_from_your_client_about_your_project_scope_and_deliverables`,
+  levels =
+    c("Extremely unclear", "Somewhat unclear", "Neither clear nor unclear", "Somewhat clear", "Extremely clear"),
+  exclude = NULL,
+  ordered = TRUE
+)
+
+students$`how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization` <- factor(
+  students$`how_would_you_rate_the_time_commitment_and_work_load_required_of_you_by_your_client_organization`,
+  levels =
+    c("Far too little", "Slightly too little", "About right", "Slightly too much", "Far too much"),
+  exclude = NULL,
+  ordered = TRUE
+)
+
+students$`to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course` <- factor(
+  students$`to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course`,
+  levels =
+    c("Far short of\n expectation", "Short of\n expectations", "Equals\n expectations", "Exceeds\n expectations", "Far exceeds\n expectations"),
+  exclude = NULL,
+  ordered = TRUE
+)
+
+students$`how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project` <- factor(
+  students$`how_supported_did_you_feel_by_the_program_coordinator_s_and_or_instructor_in_addressing_challenges_or_roadblocks_in_your_client_project`,
+  levels =
+    c("Not at all", "A little", "A moderate amount", "A lot", "A great deal"),
+  exclude = NULL,
+  ordered = TRUE
+)
+
+students$did_your_experience_in_the_program_and_or_course_help_you_get_a_job_or_internship <-
+  factor(
+    students$did_your_experience_in_the_program_and_or_course_help_you_get_a_job_or_internship,
+    levels =
+      c("No", "Yes"),
+    exclude = NULL,
+    ordered = TRUE
+  )
+
+```
+
+**Student Satisfaction (Meets Expectations)**
+
+```{r student_expect, message=FALSE, warning=FALSE}
+setwd("C:/Users/tenis/Desktop/Data_Projects/CONNECT_Eval")
+
+
+ggplot(
+  students,
+  aes(x = to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course)
+) +
+  geom_histogram(stat = "count", fill = '#3182bd') +
+  theme(
+    plot.title = element_text(size = 18,
+                              face = "bold",
+                              hjust = 0.5),
+    panel.background = element_blank(),
+    axis.line = element_line(colour = "black"),
+    legend.title = element_blank(),
+    axis.title.x = element_blank(),
+    #axis.title.y = element_blank(),
+    legend.position = "none",
+    text = element_text('Calibri', size = 18),
+  ) +
+  scale_x_discrete(drop = FALSE) +
+  ylab("Count") +
+  ggtitle("To what extend did your experience \n meet your expectations for the program?")
+
+ggsave(
+  "./reports/images/fall2020/student/student_meets_expectations.png",
+  dpi = 500 ,
+  width = 10,
+  height = 7,
+  units = "in"
+)
+
+```
+
+**You get an internship or job?**
+
+```{r job, message=FALSE, warning=FALSE}
+
+setwd("C:/Users/tenis/Desktop/Data_Projects/CONNECT_Eval")
+
+
+
+ggplot(
+  students,
+  aes(x = did_your_experience_in_the_program_and_or_course_help_you_get_a_job_or_internship)) +
+  geom_histogram(stat = "count", fill = '#3182bd') +
+  theme(
+    plot.title = element_text(size = 18,
+                              face = "bold",
+                              hjust = 0.5),
+    panel.background = element_blank(),
+    axis.line = element_line(colour = "black"),
+    legend.title = element_blank(),
+    axis.title.x = element_blank(),
+    #axis.title.y = element_blank(),
+    legend.position = "none",
+    text = element_text('Calibri', size = 18),
+  ) +
+  scale_x_discrete(drop = FALSE) +
+  ylab("Count") +
+  ggtitle("Did your experience help\n you get a job or internship?")
+
+ggsave(
+  "./reports/images/fall2020/student/job_internship.png",
+  dpi = 500 ,
+  width = 7,
+  height = 7,
+  units = "in"
+)
+```
+
+**Plots of Student Surveys**
+
+```{r student_plots, message=FALSE, warning=FALSE}
+
+
+# GGPLOTS
+for (i in 1:ncol(students)) {
+  print(
+    ggplot(students, aes(x = students[[i]], fill = students[[i]])) +
+      geom_histogram(stat = "count") +
+      theme(
+        plot.title = element_text(
+          size = 12,
+          face = "bold",
+          hjust = 0.5
+        ),
+        panel.background = element_blank(),
+        axis.line = element_line(colour = "black"),
+        legend.title = element_blank(),
+        axis.title.x = element_blank()
+      ) +
+      scale_fill_manual(values = rep_len(
+                   c(
+                     "#efb306",
+                     "#e8351e",
+                     "#cd023d",
+                     "#852f88",
+                     "#4e54ac",
+                     "#0f8096",
+                     "#17a769"
+                   ),
+                   nrow(students)
+                 ))+
+      ylab("Count")#+
+      #ggtitle(student_title[i])
+  )
+  # filename = paste("reports/images/fall2020/student_surveys", i, ".png", sep = "")
+  # ggsave(filename, dpi = 300)
+}
+
+
+```
