@@ -268,3 +268,337 @@ for (i in 1:ncol(students)) {
 
 
 ```
+
+## **Organizations**
+
+```{r data_orgs, message=FALSE, warning=FALSE}
+
+setwd("C:/Users/tenis/Desktop/Data_Projects/CONNECT_Eval")
+
+raw_org <- read_csv("data/raw/12.Client Post-Program Survey - Fall 2020_February 24, 2021_19.54.csv")
+
+raw_org <- raw_org[, -c(1:19)]
+raw_org <- raw_org %>% row_to_names(row_number = 1)
+raw_org <- tail(raw_org, -1)
+```
+
+Cleaning org survey data
+
+```{r org_cleaning, message=FALSE, warning=FALSE}
+
+# Standarizing variable names
+orgs <- clean_names(raw_org)
+
+orgs$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[orgs$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course == "Far short of expectations"] <- "Far short of\n expectations"
+
+orgs$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[orgs$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course == "Short of expectations"] <- "Short of\n expectations"
+
+orgs$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[orgs$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course == "Equals expectations"] <- "Equals\n expectations"
+
+orgs$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[orgs$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course == "Exceeds expectations"] <- "Exceeds\n expectations"
+
+orgs$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course[orgs$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course == "Far exceeds expectations"] <- "Far exceeds\n expectations"
+
+# Created ordered factors
+orgs$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course <-
+  factor(
+    orgs$to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course,
+    levels =
+      c("Far short of\n expectations",
+        "Short of\n expectations",
+        "Equals\n expectations",
+        "Exceeds\n expectations",
+        "Far exceeds\n expectations"
+      ),
+    exclude = NULL,
+    ordered = TRUE
+  )
+
+orgs$how_useful_was_this_experience_for_you_or_your_organization <-
+  factor(
+    orgs$how_useful_was_this_experience_for_you_or_your_organization,
+    levels =
+      c("Not at all useful",
+        "Slightly useful",
+        "Moderately useful",
+        "Very useful",
+        "Extremely useful"
+      ),
+    exclude = NULL,
+    ordered = TRUE
+  )
+
+orgs$how_satisfied_are_you_with_the_relationship_with_your_consultant_s <-
+  factor(
+    orgs$how_satisfied_are_you_with_the_relationship_with_your_consultant_s,
+    levels =
+      c("Not satisfied\n at all",
+        "Slightly satisfied",
+        "Moderately satisfied",
+        "Very satisfied",
+        "Extremely satisfied"
+      ),
+    exclude = NULL,
+    ordered = TRUE
+  )
+
+orgs$how_would_you_rate_the_time_commitment_and_resources_required_of_you_during_this_program_course <-
+  factor(
+    orgs$how_would_you_rate_the_time_commitment_and_resources_required_of_you_during_this_program_course,
+    levels =
+      c("Slightly too little", "About right", "Slightly too much"),
+    exclude = NULL,
+    ordered = TRUE
+  )
+orgs$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish <-
+  factor(
+    orgs$how_effective_was_your_consultant_s_in_leading_the_project_from_start_to_finish,
+    levels =
+      c(
+        "Not effective at all",
+        "Slightly effective",
+        "Moderately effective",
+        "Very effective",
+        "Extremely effective"
+      ),
+    exclude = NULL,
+    ordered = TRUE
+  )
+orgs$how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization <-
+  factor(
+    orgs$how_effective_was_your_consultant_s_in_communicating_with_you_and_or_your_organization,
+    levels =
+      c(
+        "Not effective at all",
+        "Slightly effective",
+        "Moderately effective",
+        "Very effective",
+        "Extremely effective"
+      ),
+    exclude = NULL,
+    ordered = TRUE
+  )
+orgs$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization <-
+  factor(
+    orgs$how_effective_was_your_consultant_s_in_recommending_clear_and_compelling_solutions_for_your_organization,
+    levels =
+      c(
+        "Not effective at all",
+        "Slightly effective",
+        "Moderately effective",
+        "Very effective",
+        "Extremely effective"
+      ),
+    exclude = NULL,
+    ordered = TRUE
+  )
+orgs$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization <-
+  factor(
+    orgs$how_effective_was_your_consultant_s_in_synthesizing_and_presenting_information_in_an_actionable_and_accessible_manner_to_you_and_or_your_organization,
+    levels =
+      c(
+        "Not effective at all",
+        "Slightly effective",
+        "Moderately effective",
+        "Very effective",
+        "Extremely effective"
+      ),
+    exclude = NULL,
+    ordered = TRUE
+  )
+```
+
+**Plot: Did experience meet your expectations?**
+
+```{r org_expectations, message=FALSE, warning=FALSE}
+
+setwd("C:/Users/tenis/Desktop/Data_Projects/CONNECT_Eval")
+
+
+ggplot(
+  orgs,
+  aes(x = to_what_extent_did_your_experience_meet_your_expectations_for_the_program_and_or_course)
+) +
+  geom_histogram(stat = "count", fill = '#FF6C36') +
+  theme(
+    plot.title = element_text(size = 18,
+                              face = "bold",
+                              hjust = 0.5),
+    panel.background = element_blank(),
+    axis.line = element_line(colour = "black"),
+    legend.title = element_blank(),
+    axis.title.x = element_blank(),
+    #axis.title.y = element_blank(),
+    legend.position = "none",
+    text = element_text('Calibri', size = 18),
+  ) +
+  scale_x_discrete(drop = FALSE) +
+  ylab("Count") +
+  ggtitle("To what extend did your experience \n meet your expectations for the program?")
+
+ggsave(
+  "./reports/images/fall2020/organization/organization_meets_expectations.png",
+  dpi = 500 ,
+  width = 10,
+  height = 7,
+  units = "in"
+)
+
+```
+
+**Plot: Org relationship with fellow**
+
+```{r org_fellow, message=FALSE, warning=FALSE}
+
+setwd("C:/Users/tenis/Desktop/Data_Projects/CONNECT_Eval")
+
+
+ggplot(
+  orgs,
+  aes(x = how_satisfied_are_you_with_the_relationship_with_your_consultant_s)
+) +
+  geom_histogram(stat = "count", fill = '#FF6C36') +
+  theme(
+    plot.title = element_text(size = 18,
+                              face = "bold",
+                              hjust = 0.5),
+    panel.background = element_blank(),
+    axis.line = element_line(colour = "black"),
+    legend.title = element_blank(),
+    axis.title.x = element_blank(),
+    #axis.title.y = element_blank(),
+    legend.position = "none",
+    text = element_text('Calibri', size = 18),
+  ) +
+  scale_x_discrete(drop = FALSE) +
+  ylab("Count") +
+  ggtitle("How satisfied are you with your consultant?")
+
+ggsave(
+  "./reports/images/fall2020/organization/organization_consultant.png",
+  dpi = 500 ,
+  width = 10,
+  height = 7,
+  units = "in"
+)
+```
+
+**Plot: Usefulness of experience**
+
+```{r usefulness, message=FALSE, warning=FALSE}
+
+setwd("C:/Users/tenis/Desktop/Data_Projects/CONNECT_Eval")
+
+
+ggplot(
+  orgs,
+  aes(x = how_useful_was_this_experience_for_you_or_your_organization)
+) +
+  geom_histogram(stat = "count", fill = '#FF6C36') +
+  theme(
+    plot.title = element_text(size = 18,
+                              face = "bold",
+                              hjust = 0.5),
+    panel.background = element_blank(),
+    axis.line = element_line(colour = "black"),
+    legend.title = element_blank(),
+    axis.title.x = element_blank(),
+    #axis.title.y = element_blank(),
+    legend.position = "none",
+    text = element_text('Calibri', size = 18),
+  ) +
+  scale_x_discrete(drop = FALSE) +
+  ylab("Count") +
+  ggtitle("How useful was this experience\n for you and your organization?")
+
+ggsave(
+  "./reports/images/fall2020/organization/organization_usefulness.png",
+  dpi = 500 ,
+  width = 10,
+  height = 7,
+  units = "in"
+)
+```
+
+**Organization Learning**
+
+```{r organization_learning, message=FALSE, warning=FALSE}
+setwd("C:/Users/tenis/Desktop/Data_Projects/CONNECT_Eval")
+library(RColorBrewer)
+
+org_learning <- read_csv("data/external/organization_learning.csv", 
+    col_types = cols(`#` = col_skip(), Total = col_skip()))
+
+org_learning <- org_learning %>%dplyr::select(Question, X4,X6,X8) %>% pivot_longer(!Question, names_to = "answer", values_to = "n") 
+
+org_learning$percent <- org_learning$n/9
+
+#Answer
+org_learning$answer[org_learning$answer == "X4"] <- "Not applicable"
+org_learning$answer[org_learning$answer == "X6"] <- "Somewhat True"
+org_learning$answer[org_learning$answer == "X8"] <- "Very True"
+
+org_learning$answer <- factor(
+  org_learning$answer,
+  levels =
+    c("Very True", "Somewhat True", "Not applicable"),
+  exclude = NULL,
+  ordered = TRUE
+)
+
+#Quesiton
+org_learning$Question[org_learning$Question == "implement a measurement strategy for program evaluation"] <- "implement a measurement\n strategy for program evaluation"
+
+org_learning$Question[org_learning$Question == "conduct surveys, focus groups, or stakeholder interviews"] <- "conduct surveys, focus groups,\n or stakeholder interviews"
+
+org_learning$Question[org_learning$Question == "use data for analysis, visualization, or reporting"] <- "use data for analysis,\n visualization, or reporting"
+
+org_learning$Question[org_learning$Question == "integrate advanced analytics into the organization's operations"] <- "integrate advanced analytics \ninto the organization's operations"
+
+org_learning$Quesiton <- factor(
+  org_learning$Question,
+  levels =
+    c("implement a measurement\n strategy for program evaluation", "conduct surveys, focus groups,\n or stakeholder interviews", "use data for analysis,\n visualization, or reporting", "integrate advanced analytics \ninto the organization's operations"),
+  exclude = NULL,
+  ordered = TRUE
+)
+
+
+#Ggplot 
+theme_set(theme_classic())
+
+g <- ggplot(org_learning, aes(x = Question, y = percent, fill = answer)) +
+  geom_bar(stat = "identity") +
+   geom_text(aes(label = paste(format(
+     round(percent, 3)*100, nsmall = 1
+   ), "%"), y = percent),
+   position = position_stack(vjust = 0.5)) +
+  coord_flip()+
+  theme(
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_blank(),
+    axis.line = element_line(colour = "black"),
+    text = element_text(family = "Calibri",
+                        size = 20),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    plot.title = element_text(hjust = 0.5),
+    plot.margin = margin(10, 10, 10, 10)
+    
+  ) +
+  scale_fill_brewer(palette="YlGnBu", direction = -1) +
+  labs(title = "Participation in this program helped\n my organization learn how to...", y = "Number Answered", fill = "Response") #+
+  #scale_fill_manual(values = colors, na.value = "grey") +
+  #scale_y_continuous(labels = scales::percent_format(scale = 1))
+
+g
+
+ggsave(
+  "./reports/images/fall2020/organization/organization_learning.png",
+  dpi = 500 ,
+  width = 14,
+  height = 7,
+  units = "in"
+)
+```
