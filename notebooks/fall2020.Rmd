@@ -177,7 +177,7 @@ ggplot(
   ) +
   scale_x_discrete(drop = FALSE) +
   ylab("Count") +
-  ggtitle("To what extend did your experience \n meet your expectations for the program?")
+  ggtitle("To what extent did your experience \n meet your expectations for the program?")
 
 ggsave(
   "./reports/images/fall2020/student/student_meets_expectations.png",
@@ -434,7 +434,7 @@ ggplot(
   ) +
   scale_x_discrete(drop = FALSE) +
   ylab("Count") +
-  ggtitle("To what extend did your experience \n meet your expectations for the program?")
+  ggtitle("To what extent did your experience \n meet your expectations for the program?")
 
 ggsave(
   "./reports/images/fall2020/organization/organization_meets_expectations.png",
@@ -572,7 +572,8 @@ g <- ggplot(org_learning, aes(x = Question, y = percent, fill = answer)) +
    geom_text(aes(label = paste(format(
      round(percent, 3)*100, nsmall = 1
    ), "%"), y = percent),
-   position = position_stack(vjust = 0.5)) +
+   position = position_stack(vjust = 0.5),
+   size = 6) +
   coord_flip()+
   theme(
     panel.grid.major = element_blank(),
@@ -589,8 +590,7 @@ g <- ggplot(org_learning, aes(x = Question, y = percent, fill = answer)) +
   ) +
   scale_fill_brewer(palette="YlGnBu", direction = -1) +
   labs(title = "Participation in this program helped\n my organization learn how to...", y = "Number Answered", fill = "Response") #+
-  #scale_fill_manual(values = colors, na.value = "grey") +
-  #scale_y_continuous(labels = scales::percent_format(scale = 1))
+
 
 g
 
