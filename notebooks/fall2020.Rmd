@@ -525,13 +525,15 @@ ggsave(
 ```{r organization_learning, message=FALSE, warning=FALSE}
 setwd("C:/Users/tenis/Desktop/Data_Projects/CONNECT_Eval")
 library(RColorBrewer)
+library(extrafont)
+loadfonts(device = "win")
 
-org_learning <- read_csv("data/external/organization_learning.csv", 
+org_learning <- read_csv("data/client_skills_fall2020.csv", 
     col_types = cols(`#` = col_skip(), Total = col_skip()))
 
 org_learning <- org_learning %>%dplyr::select(Question, X4,X6,X8) %>% pivot_longer(!Question, names_to = "answer", values_to = "n") 
 
-org_learning$percent <- org_learning$n/9
+org_learning$percent <- org_learning$n/13
 
 #Answer
 org_learning$answer[org_learning$answer == "X4"] <- "Not applicable"
@@ -547,18 +549,18 @@ org_learning$answer <- factor(
 )
 
 #Quesiton
-org_learning$Question[org_learning$Question == "implement a measurement strategy for program evaluation"] <- "implement a measurement\n strategy for program evaluation"
+org_learning$Question[org_learning$Question == "implement a measurement strategy for program evaluation"] <- "implement a\n measurement\n strategy"
 
-org_learning$Question[org_learning$Question == "conduct surveys, focus groups, or stakeholder interviews"] <- "conduct surveys, focus groups,\n or stakeholder interviews"
+org_learning$Question[org_learning$Question == "conduct surveys, focus groups, or stakeholder interviews"] <- "conduct surveys,\n focus groups,\n or interviews"
 
-org_learning$Question[org_learning$Question == "use data for analysis, visualization, or reporting"] <- "use data for analysis,\n visualization, or reporting"
+org_learning$Question[org_learning$Question == "use data for analysis, visualization, or reporting"] <- "use data\n for analysis\n or reporting"
 
-org_learning$Question[org_learning$Question == "integrate advanced analytics into the organization's operations"] <- "integrate advanced analytics \ninto the organization's operations"
+org_learning$Question[org_learning$Question == "integrate advanced analytics into the organization's operations"] <- "integrate\n advanced\n analytics"
 
 org_learning$Quesiton <- factor(
   org_learning$Question,
   levels =
-    c("implement a measurement\n strategy for program evaluation", "conduct surveys, focus groups,\n or stakeholder interviews", "use data for analysis,\n visualization, or reporting", "integrate advanced analytics \ninto the organization's operations"),
+    c("implement a\n measurement\n strategy", "conduct surveys,\n focus groups,\n or interviews", "use data\n for analysis\n or reporting", "integrate\n advanced\n analytics"),
   exclude = NULL,
   ordered = TRUE
 )
@@ -573,23 +575,30 @@ g <- ggplot(org_learning, aes(x = Question, y = percent, fill = answer)) +
      round(percent, 3)*100, nsmall = 1
    ), "%"), y = percent),
    position = position_stack(vjust = 0.5),
-   size = 6) +
+   size = 8) +
   coord_flip()+
   theme(
     panel.grid.major = element_blank(),
     panel.grid.minor = element_blank(),
-    panel.background = element_blank(),
-    axis.line = element_line(colour = "black"),
-    text = element_text(family = "Calibri",
-                        size = 20),
+    panel.background = element_rect(fill = "#D6D6D6"),
+    axis.line = element_blank(),
+    text = element_text(family = "Montserrat",
+                        size = 30,
+                        face = "bold"),
     axis.title.x = element_blank(),
     axis.title.y = element_blank(),
+    axis.ticks = element_blank(),
+     axis.text.x=element_blank(),
     plot.title = element_text(hjust = 0.5),
-    plot.margin = margin(10, 10, 10, 10)
+    plot.margin = margin(10, 10, 10, 10),
+    plot.background = element_rect(fill = "#D6D6D6"),
+    legend.title = element_blank(),
+    legend.position = "bottom",
+    legend.background = element_rect(fill = "#D6D6D6"), 
     
   ) +
-  scale_fill_brewer(palette="YlGnBu", direction = -1) +
-  labs(title = "Participation in this program helped\n my organization learn how to...", y = "Number Answered", fill = "Response") #+
+  scale_fill_manual(values = c("#487897", "#7EACCD", "#F6AC75")) +
+  labs(title = "CONNECT helped\n my organization learn how to...", y = "Number Answered", fill = "Response") #+
 
 
 g
@@ -598,7 +607,7 @@ ggsave(
   "./reports/images/fall2020/organization/organization_learning.png",
   dpi = 500 ,
   width = 14,
-  height = 7,
+  height = 9,
   units = "in"
 )
 ```
