@@ -1,0 +1,59 @@
+---
+fontfamily: droid serif
+output: pdf_document
+latex_engine: pdflatex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
+```
+
+```{r libraries and raw, message=FALSE, warning=FALSE, include=FALSE}
+
+df <- raw_students %>% filter(name == v)
+
+
+
+```
+
+![](images/RGB_formal_RGK-01.png){width="300"}
+
+# **CONNECT STUDENT PROFILE**
+
+**NAME:**`r df$name[1]` \bigskip
+
+**EMAIL:** `r df$email[1]` \bigskip
+
+**PHONE \#:** `r df$phone_number_please_do_not_include_hyphens_or_parentheses` \bigskip
+
+**LINKEDIN URL:** [`r df$linked_in_preferred_but_not_required`](`r df$linked_in_preferred_but_not_required`)
+
+------------------------------------------------------------------------
+
+# **REASON(S) FOR INTEREST**
+
+`r df$why_are_you_interested_in_working_on_a_project_check_all_that_apply`
+
+------------------------------------------------------------------------
+
+# **AVAILABILITY**
+
+`r df$do_you_have_access_to_transportation`
+\smallskip
+
+`r df$do_you_need_flexible_work_hours`
+\smallskip
+
+`r df$do_you_need_the_ability_to_work_remotely`
+
+------------------------------------------------------------------------
+
+# **OTHER RELAVENT INFORMATION**
+
+`r df$please_select_each_of_the_following_that_applies_to_you`, `r df$which_ut_schools_colleges_are_you_affiliated_with_check_all_that_apply_selected_choice`
+\smallskip
+
+`r df$connect`
+
+

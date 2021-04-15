@@ -1,0 +1,52 @@
+---
+fontfamily: droid serif
+output: pdf_document
+latex_engine: pdflatex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
+```
+
+```{r libraries and raw, message=FALSE, warning=FALSE, include=FALSE}
+
+df <- raw_projects %>% filter(organization_name == v)
+
+```
+
+![](images/RGB_formal_RGK-01.png){width="300"}
+
+# **CONNECT Project Summary**
+
+**Your Matched Organization:**`r df$organization_name[1]` 
+\bigskip
+
+**Mission:** `r df$organization_mission_statement[1]`
+
+------------------------------------------------------------------------
+
+# **Project Specifics**
+
+**GOAL:** `r df$project_goal` 
+\bigskip
+
+**DELIVERABLE(S):** `r df$desired_outcomes_deliverables`
+
+------------------------------------------------------------------------
+
+# **Project Logistics**
+
+**DURATION:** `r df$what_is_the_estimated_duration_of_this_project` 
+\bigskip
+
+**TIME COMMITTMENT:**`r df$how_much_time_per_week_is_required_to_complete_this_project` 
+
+\bigskip
+**WORK ENVIRONMENT FACTORS:** `r df$work_environment` 
+
+\bigskip
+**ESTIMATED FELLOWSHIP:** `r df$fellowship_amount` 
+
+\bigskip
+**ORGANIZATION WEBSITE:** [`r df$organization_url`](`r df$organization_url`){style="color: blue"}
