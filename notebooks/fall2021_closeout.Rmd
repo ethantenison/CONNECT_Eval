@@ -124,18 +124,116 @@ ggplot(lrn, aes(fill=response, y=n, x=reorder(bucket, -n))) +
 
 library(gt)
 
-new_org <- org_raw |> 
-  select(Q2, Q13) |> 
-  filter(!is.na(Q13)) |> 
+new_org <- org_raw |>
+  select(Q2, Q13) |>
+  filter(!is.na(Q13)) |>
   rename(Organization = "Q2",
          Recomentation = "Q13")
 
-new_org[1,2] <- "Center for Health Communication at UT"
-new_org[2,2] <- "Local fast-growing churches"
+new_org[1, 2] <- "Center for Health Communication at UT"
+new_org[2, 2] <- "Local fast-growing churches"
 
-gt_org <- new_org |> 
-  gt()
+gt_org <- new_org |>
+  gt() |>
+  tab_header(title = "Are there any organizations you think could benefit from this program?") |> tab_style(style = list(
+    cell_text(
+      size = px(24),
+      weight = "normal",
+      align = "left",
+    )
+  ),
+  locations = list(cells_title(groups = "title"))) |> 
+  tab_style(
+  style = list( 
+   cell_text(
+    size = px(20),
+    color = "blue",
+   )
+  ),
+  locations = list(
+   cells_column_labels(everything())
+  )
+ )
 
 gt_org
 ```
 
+### Org Clients
+
+```{r org_dei}
+library(Hmisc) 
+
+clients_raw <- org_raw |>
+  select(starts_with("Q24"))
+
+clients <- clients_raw |>
+  select(starts_with("Q24")) |>
+  pivot_longer(Q24_2:Q24_6, names_to = "Race", values_to = "Percent") |>
+  filter(!is.na(Percent)) |>
+  group_by(Race) |>
+  dplyr::summarize(average = mean(Percent)) |>
+  mutate(
+    Race = case_when(
+      Race == "Q24_2" ~ "Asian",
+      Race == "Q24_7" ~ "Black",
+      Race == "Q24_8" ~ "Hispanic",
+      Race == "Q24_10" ~ "Native American/\n Pacific Islander",
+      Race == "Q24_6" ~ "White"
+    )
+  )
+
+theme_set(theme_classic())
+ggplot(clients, aes(fill=Race, y=average, x=reorder(Race, -average))) + 
+    geom_bar(stat="identity") +
+    scale_fill_viridis(discrete = T) +
+    labs(
+      title = "To the best of your knowledge, please select the social identities\n that make up approximately the CLIENTS your organization serves? ",
+      caption = "*This is an average of all the organizations. For a better estimate we need to fine tune the total population size.",
+      y = "Average Percent", 
+      x = "",
+      fill = ""
+    ) +
+  theme(legend.position = "none")
+
+
+```
+
+
+### Org Board
+
+```{r org_dei}
+library(Hmisc) 
+
+board_raw <- org_raw |>
+  select(starts_with("Q28"))
+
+board <- board_raw |>
+  pivot_longer(Q28_2:Q28_6, names_to = "Race", values_to = "Percent") |>
+  filter(!is.na(Percent)) |>
+  group_by(Race) |>
+  dplyr::summarize(average = mean(Percent)) |>
+  mutate(
+    Race = case_when(
+      Race == "Q28_2" ~ "Asian",
+      Race == "Q28_7" ~ "Black",
+      Race == "Q28_8" ~ "Hispanic",
+      Race == "Q28_10" ~ "Native American/\n Pacific Islander",
+      Race == "Q28_6" ~ "White"
+    )
+  )
+
+theme_set(theme_classic())
+ggplot(board, aes(fill=Race, y=average, x=reorder(Race, -average))) + 
+    geom_bar(stat="identity") +
+    scale_fill_viridis(discrete = T) +
+    labs(
+      title = "To the best of your knowledge, please select\n the social identities that make up approximately the\n BOARD OF DIRECTORS your organization serves? ",
+      caption = "*This is an average of all the organizations. For a better estimate we need to fine tune the total population size.",
+      y = "Average Percent", 
+      x = "",
+      fill = ""
+    ) +
+  theme(legend.position = "none")
+
+
+```
