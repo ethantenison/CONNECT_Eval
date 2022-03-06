@@ -237,3 +237,192 @@ ggplot(board, aes(fill=Race, y=average, x=reorder(Race, -average))) +
 
 
 ```
+
+
+# Students
+
+### Net Promoter 
+
+```{r netpromoter_stu}
+
+
+ proms <- stu_raw |> 
+   group_by(Q4_NPS_GROUP) |> 
+   count() |> 
+   filter(!is.na(Q4_NPS_GROUP))
+ 
+ 
+ # Compute percentages
+ proms$fraction <- proms$n / sum(proms$n)
+ 
+ # Compute the cumulative percentages (top of each rectangle)
+ proms$ymax <- cumsum(proms$fraction)
+ 
+ # Compute the bottom of each rectangle
+ proms$ymin <- c(0, head(proms$ymax, n=-1))
+ 
+ # Compute label position
+ proms$labelPosition <- (proms$ymax + proms$ymin) / 2
+ 
+ # Compute a good label
+ proms$label <- paste0(proms$Q4_NPS_GROUP, "\n value: ", proms$n)
+ 
+ # Make the plot
+ ggplot(proms, aes(ymax=ymax, ymin=ymin, xmax=4, xmin=3, fill=Q4_NPS_GROUP)) +
+   geom_rect() +
+   geom_label( x=3.5, aes(y=labelPosition, label=label), size=5) +
+   scale_fill_brewer(palette=4) +
+   coord_polar(theta="y") +
+   xlim(c(2, 4)) +
+   theme_void() +
+   theme(legend.position = "none")
+
+```
+
+### Improvements
+
+
+```{r improvements}
+
+library(wordcloud)
+library(RColorBrewer)
+library(tm) # to create corpus
+library(wordcloud2)
+library(htmlwidgets)
+
+# Create a vector containing only the text
+text <- stu_raw$Q11
+
+# Create a corpus
+docs <- Corpus(VectorSource(text))
+
+# standardize corpus
+docs <- docs %>%
+  tm_map(removeNumbers) %>%
+  tm_map(removePunctuation) %>%
+  tm_map(stripWhitespace)
+docs <- tm_map(docs, content_transformer(tolower))
+docs <- tm_map(docs, removeWords, stopwords("english"))
+
+# create a document matrix
+dtm <- TermDocumentMatrix(docs)
+matrix <- as.matrix(dtm)
+words <- sort(rowSums(matrix), decreasing = TRUE)
+df <- data.frame(word = names(words), freq = words)
+df$word <- as.character(df$word)
+df <- df |> 
+  mutate(freq = case_when(
+         word == "workshop" ~ 7,
+         TRUE ~ freq)) |> 
+  filter(word != "workshops")
+  target <- c("also", "project", "really", "helpful", "wasnt", "etc", "asks", "move", "gave", "connect", "fellows", "program")
+  "%ni%" <- Negate("%in%")
+  df <- filter(df, word %ni% target)
+df$word <- as.factor(df$word)
+
+
+w1 <-
+  wordcloud(words = df$word,
+            freq = df$freq, 
+            min.freq = 1, 
+            rot.per= 0.4,
+            colors = brewer.pal(8, "Dark2"),
+            random.order = FALSE)
+w1
+
+
+
+
+
+
+
+
+```
+
+
+### What was useful by bucket
+
+```{r useful}
+
+
+useful <- stu_raw |>
+  select(starts_with("Q13")) |> 
+  pivot_longer(Q13_1:Q13_5, names_to = "question", values_to = "usefullness") |> 
+  filter(!is.na(usefullness)) |> 
+  group_by(usefullness) |> 
+  count()
+
+
+theme_set(theme_classic())
+ggplot(useful, aes(fill=usefullness, y=n, x=reorder(usefullness, n))) + 
+    geom_bar(stat="identity") +
+    scale_fill_viridis(discrete = T) +
+    coord_flip() +
+    labs(
+      title = "What resources did you find most helpful for your\n learning and/or completing your client project?",
+      y = "Total Number", 
+      x = "",
+      fill = ""
+    ) +
+  theme(legend.position = "none")
+
+
+```
+
+### Diversity 
+
+```{r diversity}
+
+div <- stu_raw |> 
+  select(Q23) |> 
+  group_by(Q23) |> 
+  count() 
+
+div <- div[1:4,1:2]
+
+theme_set(theme_classic())
+ggplot(div, aes(fill=Q23, y=n, x=reorder(Q23, n))) + 
+    geom_bar(stat="identity") +
+    scale_fill_viridis(discrete = T) +
+    coord_flip() +
+    labs(
+      title = "On a scale of 1 through 5, how diverse would you rate\n the folx you interacted with during your time in the CONNECT\n Program (ie. students, staff, agencies)?",
+      y = "Total Number", 
+      x = "",
+      fill = ""
+    ) +
+  theme(legend.position = "none")
+
+```
+
+
+### Race
+
+```{r race}
+
+race <- stu_raw |> 
+  select(Q18) |> 
+  group_by(Q18) |> 
+  count() |> 
+  filter(Q18 != "I prefer to specify") 
+
+race <- race[1:4,1:2]
+
+theme_set(theme_classic())
+ggplot(race, aes(fill=Q18, y=n, x=reorder(Q18, n))) + 
+    geom_bar(stat="identity") +
+    scale_fill_viridis(discrete = T) +
+    coord_flip() +
+    labs(
+      title = "Which of the following best describes your race/ethnicity?",
+      y = "Total Number", 
+      x = "",
+      fill = ""
+    ) +
+  theme(legend.position = "none")
+
+
+
+
+```
+
