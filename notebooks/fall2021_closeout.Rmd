@@ -2,15 +2,30 @@
 title: "fall_2021"
 author: "Ethan Tenison"
 date: "3/5/2022"
-output: html_document
+output:
+  html_document:
+    theme:
+      bg: "#101010"
+      fg: "#FDF7F7"
+      primary: "#ED79F9"
+      base_font:
+        google: "Prompt"
+      code_font:
+        google: "JetBrains Mono"
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include=FALSE, message=FALSE, warning=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
 
 library(tidyverse)
 library(qualtRics)
+library(bslib)
+library(RColorBrewer)
+library(extrafont)
+library(viridis)
+library(hrbrthemes)
+loadfonts(device = "win")
 ```
 
 # Qualtrics Data Pull
@@ -35,6 +50,8 @@ org_number <- which(surveys$name=="01.Organization Close-out Survey_Fall 2021", 
 #Fetching the Survey Contents 
 org_raw <- fetch_survey(surveyID = surveys$id[org_number], force_request = TRUE)
 stu_raw <- fetch_survey(surveyID = surveys$id[stu_number], force_request = TRUE)
+
+#write.csv(stu_raw, "data/interim/student_data_fall2021.csv", row.names = FALSE)
 
 
 ```
@@ -71,6 +88,7 @@ stu_raw <- fetch_survey(surveyID = surveys$id[stu_number], force_request = TRUE)
  ggplot(prom, aes(ymax=ymax, ymin=ymin, xmax=4, xmin=3, fill=Q3_NPS_GROUP)) +
    geom_rect() +
    geom_label( x=3.5, aes(y=labelPosition, label=label), size=5) +
+   labs(title = "Organization Promoter Score") +
    scale_fill_brewer(palette=4) +
    coord_polar(theta="y") +
    xlim(c(2, 4)) +
@@ -82,11 +100,7 @@ stu_raw <- fetch_survey(surveyID = surveys$id[stu_number], force_request = TRUE)
 ### Organization Learning 
 
 ```{r learning}
-library(RColorBrewer)
-library(extrafont)
-library(viridis)
-library(hrbrthemes)
-loadfonts(device = "win")
+
 
 lrn <- org_raw |>
   select(starts_with("Q9")) |>
@@ -120,7 +134,7 @@ ggplot(lrn, aes(fill=response, y=n, x=reorder(bucket, -n))) +
 
 ### Table of New Organizations
 
-```{r}
+```{r table}
 
 library(gt)
 
@@ -135,9 +149,9 @@ new_org[2, 2] <- "Local fast-growing churches"
 
 gt_org <- new_org |>
   gt() |>
-  tab_header(title = "Are there any organizations you think could benefit from this program?") |> tab_style(style = list(
+  tab_header(title = "Possible Leads") |> tab_style(style = list(
     cell_text(
-      size = px(24),
+      size = px(28),
       weight = "normal",
       align = "left",
     )
@@ -146,8 +160,8 @@ gt_org <- new_org |>
   tab_style(
   style = list( 
    cell_text(
-    size = px(20),
-    color = "blue",
+    size = px(24),
+    color = "#000000",
    )
   ),
   locations = list(
@@ -201,7 +215,7 @@ ggplot(clients, aes(fill=Race, y=average, x=reorder(Race, -average))) +
 
 ### Org Board
 
-```{r org_dei}
+```{r org_dei2}
 library(Hmisc) 
 
 board_raw <- org_raw |>
@@ -320,13 +334,13 @@ df <- df |>
   df <- filter(df, word %ni% target)
 df$word <- as.factor(df$word)
 
-
+set.seed(27)
 w1 <-
   wordcloud(words = df$word,
             freq = df$freq, 
             min.freq = 1, 
             rot.per= 0.4,
-            colors = brewer.pal(8, "Dark2"),
+            colors = viridis(8),
             random.order = FALSE)
 w1
 
@@ -340,7 +354,7 @@ w1
 ```
 
 
-### What was useful by bucket
+### Usefulness 
 
 ```{r useful}
 
@@ -368,6 +382,57 @@ ggplot(useful, aes(fill=usefullness, y=n, x=reorder(usefullness, n))) +
 
 
 ```
+
+### Usefullness by bucket 
+
+
+```{r use_bucket}
+
+use_bucket <- read_csv("data/processed/student_data_fall2021_addbucket.csv") |> 
+  select(Q2, Project_Bucket, starts_with("Q13")) |> 
+  mutate(Project_Bucket = case_when(
+    Project_Bucket == "Measurement Strategy" ~ "Measurement & Collection",
+    Project_Bucket == "Measurement Strategy, Data Collection & Tool Development" ~ "Measurement & Collection",
+    Project_Bucket == "Data Collection & Tool Development" ~ "Measurement & Collection",
+    Project_Bucket == "Data Interpretation & Analysis" ~ "Data Intensive",
+    Project_Bucket == "Advanced Analytics & Business Intelligence" ~ "Data Intensive",
+    Project_Bucket == "Data Collection & Tool Development, Data Interpretation & Analysis" ~ "Data Intensive"
+    
+  )) |> 
+  filter(!is.na(Project_Bucket)) |> 
+  pivot_longer(Q13_1:Q13_5, names_to = "question", values_to = "usefullness") |> 
+  filter(!is.na(usefullness)) |> 
+  group_by(Project_Bucket, usefullness) |> 
+  count() |> 
+  mutate(perc = case_when(
+    Project_Bucket == "Data Intensive" ~ n/4,
+    Project_Bucket == "Measurement & Collection" ~ n/8
+  ))
+
+# data intensive = 4, measurement = 8
+
+library(scales)
+
+theme_set(theme_classic())
+ggplot(use_bucket, aes(fill=usefullness, y=perc, x=reorder(usefullness, perc))) + 
+    geom_bar(stat="identity") +
+    scale_fill_viridis(discrete = T) +
+    coord_flip() +
+    labs(
+      title = "What resources did you find most helpful for your\n learning and/or completing your client project?",
+      subtitle = "By Bucket Type",
+      y = "Percent", 
+      x = "",
+      fill = ""
+    ) +
+  #scale_y_continuous(labels = scales::percent(100, scale = 1)) +
+  facet_wrap(~Project_Bucket) +
+  theme(legend.position = "none")
+
+
+
+```
+
 
 ### Diversity 
 
@@ -401,15 +466,16 @@ ggplot(div, aes(fill=Q23, y=n, x=reorder(Q23, n))) +
 ```{r race}
 
 race <- stu_raw |> 
-  select(Q18) |> 
-  group_by(Q18) |> 
-  count() |> 
-  filter(Q18 != "I prefer to specify") 
-
-race <- race[1:4,1:2]
+  select(starts_with("Q18")) |> 
+  pivot_longer(Q18_1:Q18_9, names_to = "Q18", values_to = "race") |> 
+  filter(!is.na(race)) |> 
+  group_by(race) |> 
+  count()
+  
+  
 
 theme_set(theme_classic())
-ggplot(race, aes(fill=Q18, y=n, x=reorder(Q18, n))) + 
+ggplot(race, aes(fill=race, y=n, x=reorder(race, n))) + 
     geom_bar(stat="identity") +
     scale_fill_viridis(discrete = T) +
     coord_flip() +
