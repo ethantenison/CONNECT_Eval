@@ -1,21 +1,26 @@
 ---
-title: "fall_2021"
-author: "Ethan Tenison"
-date: "3/5/2022"
+title: "CONNECT Fall 2021 Cohort Report"
+description: | 
+  Analyzing the results from organizations and students at UT Austin, UT Dallas, and the University of Houston
+author: Ethan Tenison 
+affiliation: RGK Center for Philanthropy and Community Service 
+date: "`r format(Sys.Date(), '%B %d, %Y') `"
 output:
   html_document:
+    code_folding: hide
     theme:
-      bg: "#101010"
-      fg: "#FDF7F7"
-      primary: "#ED79F9"
+      bg: "#f2f0ec"
+      fg: "#000000"
+      primary: "#33638D"
       base_font:
         google: "Prompt"
       code_font:
         google: "JetBrains Mono"
 ---
+Analyzing the results from organizations and students at UT Austin, UT Dallas, and the University of Houston. 
 
-```{r setup, include=FALSE, message=FALSE, warning=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r setup, include=FALSE, message=FALSE, warning=FALSE, fig.align = 'center'}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
 
 library(tidyverse)
@@ -25,12 +30,13 @@ library(RColorBrewer)
 library(extrafont)
 library(viridis)
 library(hrbrthemes)
+library(patchwork)
+library(scales)
 loadfonts(device = "win")
 ```
 
-# Qualtrics Data Pull
 
-```{r qualtrics, message=FALSE, warning=FALSE, echo=TRUE, results='hide'}
+```{r qualtrics, message=FALSE, warning=FALSE, echo=TRUE, results='hide', include = FALSE}
 
 # # Connecting to the Qualtrics API
 # qualtrics_api_credentials(
@@ -56,11 +62,11 @@ stu_raw <- fetch_survey(surveyID = surveys$id[stu_number], force_request = TRUE)
 
 ```
 
-# Organization Infographic
+# Organizations
 
-### Net Promoter
+### Net Promoter Score 
 
-```{r netpromoter}
+```{r netpromoter, include = FALSE}
 
 
  prom <- org_raw |> 
@@ -82,19 +88,26 @@ stu_raw <- fetch_survey(surveyID = surveys$id[stu_number], force_request = TRUE)
  prom$labelPosition <- (prom$ymax + prom$ymin) / 2
  
  # Compute a good label
- prom$label <- paste0(prom$Q3_NPS_GROUP, "\n value: ", prom$n)
+ prom$label <- paste0(prom$Q3_NPS_GROUP, ": \n", prom$n)
  
+ theme_set(theme_classic())
  # Make the plot
- ggplot(prom, aes(ymax=ymax, ymin=ymin, xmax=4, xmin=3, fill=Q3_NPS_GROUP)) +
+ prom <- ggplot(prom, aes(ymax=ymax, ymin=ymin, xmax=4, xmin=3, fill=Q3_NPS_GROUP)) +
    geom_rect() +
-   geom_label( x=3.5, aes(y=labelPosition, label=label), size=5) +
-   labs(title = "Organization Promoter Score") +
-   scale_fill_brewer(palette=4) +
+   geom_label( x=3.5, aes(y=labelPosition, label=label), size=4, alpha = 0, label.size = NA,
+               label.padding = unit(0.05, "lines")) +
+   labs(caption= "Organizations") +
+   scale_fill_manual(values = c("#ffbf00", "#007000")) +
    coord_polar(theta="y") +
    xlim(c(2, 4)) +
    theme_void() +
-   theme(legend.position = "none")
+   theme(legend.position = "none",
+         plot.caption = element_text(size = 20, hjust = 0.5))
 
+ color = alpha('black', .5)
+# ggsave("reports/2021_fall/org_promoter_score.png")
+
+prom
 ```
 
 ### Organization Learning 
@@ -116,7 +129,7 @@ lrn <- org_raw |>
          bucket == "Q9_1" ~ "Measurement",
          bucket == "Q9_2" ~ "Data Collection",
          bucket == "Q9_3" ~ "Data Analysis",
-         bucket == "Q9_4" ~ "Advanced Analytics")
+         bucket == "Q9_4" ~ "Advanced\n Analytics")
          )
 
 theme_set(theme_classic())
@@ -128,7 +141,10 @@ ggplot(lrn, aes(fill=response, y=n, x=reorder(bucket, -n))) +
       y = "Number", 
       x = "",
       fill = ""
-    )
+    ) +
+  theme(text = element_text(size =14))
+
+ggsave("reports/2021_fall/org_learning.png")
 
 ```
 
@@ -197,17 +213,20 @@ clients <- clients_raw |>
   )
 
 theme_set(theme_classic())
-ggplot(clients, aes(fill=Race, y=average, x=reorder(Race, -average))) + 
+org_clients <- ggplot(clients, aes(fill=Race, y=average, x=reorder(Race, -average))) + 
     geom_bar(stat="identity") +
     scale_fill_viridis(discrete = T) +
     labs(
-      title = "To the best of your knowledge, please select the social identities\n that make up approximately the CLIENTS your organization serves? ",
-      caption = "*This is an average of all the organizations. For a better estimate we need to fine tune the total population size.",
+      title = "Clients",
       y = "Average Percent", 
       x = "",
       fill = ""
     ) +
-  theme(legend.position = "none")
+  theme(legend.position = "none",
+        text = element_text(size =14)) 
+
+ggsave("reports/2021_fall/org_clients.png")
+
 
 
 ```
@@ -237,25 +256,43 @@ board <- board_raw |>
   )
 
 theme_set(theme_classic())
-ggplot(board, aes(fill=Race, y=average, x=reorder(Race, -average))) + 
+org_board <- ggplot(board, aes(fill=Race, y=average, x=reorder(Race, -average))) + 
     geom_bar(stat="identity") +
     scale_fill_viridis(discrete = T) +
     labs(
-      title = "To the best of your knowledge, please select\n the social identities that make up approximately the\n BOARD OF DIRECTORS your organization serves? ",
-      caption = "*This is an average of all the organizations. For a better estimate we need to fine tune the total population size.",
-      y = "Average Percent", 
+      title = "Board of directors",
+      y = "", 
       x = "",
       fill = ""
     ) +
-  theme(legend.position = "none")
+  theme(legend.position = "none",
+        text = element_text(size =14))
 
 
 ```
 
 
-# Students
+### Demo Combined
 
-### Net Promoter 
+```{r demo_combined}
+
+demo_org <-
+  org_clients + org_board + plot_annotation(
+    title = "Social Identities accross Organizations",
+    caption = "*These are only averages of estimates. More data needs to be collected.",
+    theme = theme(plot.title = element_text(size = 20))
+  ) + plot_layout(widths = c(1.5, 1))
+
+demo_org
+
+ggsave("reports/2021_fall/org_demographics.png", width = 9, height = 4.5)
+
+```
+
+
+# Student Data
+
+### Net Promoter Score
 
 ```{r netpromoter_stu}
 
@@ -279,17 +316,24 @@ ggplot(board, aes(fill=Race, y=average, x=reorder(Race, -average))) +
  proms$labelPosition <- (proms$ymax + proms$ymin) / 2
  
  # Compute a good label
- proms$label <- paste0(proms$Q4_NPS_GROUP, "\n value: ", proms$n)
+ proms$label <- paste0(proms$Q4_NPS_GROUP, ": \n", proms$n)
  
  # Make the plot
- ggplot(proms, aes(ymax=ymax, ymin=ymin, xmax=4, xmin=3, fill=Q4_NPS_GROUP)) +
+prom_stu <- ggplot(proms, aes(ymax=ymax, ymin=ymin, xmax=4, xmin=3,
+                              fill=Q4_NPS_GROUP)) +
    geom_rect() +
-   geom_label( x=3.5, aes(y=labelPosition, label=label), size=5) +
-   scale_fill_brewer(palette=4) +
+   geom_label( x=3.5, aes(y=labelPosition, label=label),alpha = 0, size=4,
+               label.size = NA,
+               label.padding = unit(0.05, "lines")) +
+   scale_fill_manual(values = c("#D2222D", "#ffbf00", "#007000")) +
    coord_polar(theta="y") +
    xlim(c(2, 4)) +
+   labs(caption = "Students") +
    theme_void() +
-   theme(legend.position = "none")
+   theme(legend.position = "none",
+         plot.caption = element_text(size = 20, hjust = 0.5))
+
+prom_stu
 
 ```
 
@@ -335,20 +379,13 @@ df <- df |>
 df$word <- as.factor(df$word)
 
 set.seed(27)
-w1 <-
-  wordcloud(words = df$word,
+wordcloud(words = df$word,
             freq = df$freq, 
             min.freq = 1, 
             rot.per= 0.4,
             colors = viridis(8),
-            random.order = FALSE)
-w1
-
-
-
-
-
-
+            random.order = FALSE,
+            family = "serif", font = 2)
 
 
 ```
@@ -489,6 +526,19 @@ ggplot(race, aes(fill=race, y=n, x=reorder(race, n))) +
 
 
 
+
+```
+
+
+
+# Combined
+
+```{r net_com}
+
+prom_combined = prom + prom_stu +
+  plot_annotation(title = "Net Promoter Score", subtitle= "NPS measures how likely particpants are to recommend CONNECT", theme = theme(plot.title = element_text(size = 20))) 
+
+ggsave("reports/2021_fall/netpromoter_combined.png")
 
 ```
 
